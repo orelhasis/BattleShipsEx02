@@ -1,5 +1,5 @@
 package BattleShipsLogic.Definitions;
 
-public enum GameType {
-    BASIC, ADVANCE;
+public enum ShipCategories {
+    REGULAR, L_SHAPE;
 }
