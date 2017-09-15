@@ -2,6 +2,7 @@ package FormUI;
 
 import BattleShipsLogic.GameObjects.GameManager;
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
 
 import java.awt.*;
 
@@ -23,6 +24,6 @@ public class Controller {
 
     @FXML
     public void loadButtonClick() {
-
+        System.out.println("stam");
     }
 }
