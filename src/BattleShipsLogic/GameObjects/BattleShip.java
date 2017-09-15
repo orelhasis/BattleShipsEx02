@@ -1,12 +1,11 @@
 package BattleShipsLogic.GameObjects;
 
 import BattleShipsLogic.Definitions.ShipDirection;
-import BattleShipsLogic.Definitions.ShipType;
 
 public class BattleShip extends SeaItem {
     /* -------------- Data members -------------- */
     private ShipDirection direction;
-    private ShipType type;
+    private String type;
     private final int length;
     private int remainingPartsCount;
     private int score;
@@ -20,11 +19,11 @@ public class BattleShip extends SeaItem {
         this.direction = direction;
     }
 
-    public ShipType getType() {
+    public String getType() {
         return type;
     }
 
-    public void setType(ShipType type) {
+    public void setType(String type) {
         this.type = type;
     }
 
@@ -34,16 +33,13 @@ public class BattleShip extends SeaItem {
 
     /* -------------- Function members -------------- */
 
-    public BattleShip(ShipDirection direction, ShipType type, int length, int score, int x, int y) {
+    public BattleShip(ShipDirection direction, String type, int length, int score, int x, int y) {
         super(x,y);
         this.score = score;
         this.direction = direction;
         this.type = type;
         this.length = this.remainingPartsCount = length;
-        setItemChar('B');
-        if(type == ShipType.shipTypeA) {
-            setItemChar('A');
-        }
+        setItemChar('S');
     }
 
     @Override

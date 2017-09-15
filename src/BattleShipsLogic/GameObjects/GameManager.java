@@ -93,14 +93,14 @@ public class GameManager extends java.util.Observable{
         isErrorLoading = false;
         if (GameType.BASIC == GameType.valueOf(gameSettings.getGameType())) {
             type = GameType.BASIC;
-            loadBasicGame(gameSettings);
         }
+        loadGame(gameSettings);
         currentPlayer = players[0];
         winnerPlayer = null;
         return !isErrorLoading;
     }
 
-    private void loadBasicGame(BattleShipGame gameSettings) {
+    private void loadGame(BattleShipGame gameSettings) {
         this.boardSize =  gameSettings.getBoardSize();
         initializePlayer(gameSettings, PlayerName.PLAYER_1);
         initializePlayer(gameSettings, PlayerName.PLAYER_2);
@@ -110,7 +110,6 @@ public class GameManager extends java.util.Observable{
 
         // Get board size.
         int boardSize = gameSettings.getBoardSize();
-
         // Get Player board.
         int playerIndex = 1;
         if(name == PlayerName.PLAYER_1) {
@@ -120,7 +119,6 @@ public class GameManager extends java.util.Observable{
         // Get Game ship types and player board.
         List<ShipTypes.ShipType> shipTypesList = gameSettings.getShipTypes().getShipType();
         Board playerBoard = gameSettings.getBoards().getBoard().get(playerIndex);
-
         // Initiate board.
         players[playerIndex] = new Player(name, boardSize, playerBoard.getShip().size());
         initiatePlayerBattleShips(players[playerIndex], playerBoard, shipTypesList);
@@ -129,6 +127,14 @@ public class GameManager extends java.util.Observable{
     private LinkedHashMap<String, Integer> createShipTypeMap(List<ShipTypes.ShipType> shipTypes){
         LinkedHashMap<String,Integer> shipTypeMap = new LinkedHashMap<>();
         for (ShipTypes.ShipType type :shipTypes) {
+            if(this.type == GameType.BASIC && type.getCategory() == ShipCategories.L_SHAPE.name()){
+                isErrorLoading = true;
+                errorString += "Basic Game cannot have an L-Shape Ships!" + System.getProperty("line.separator");
+            }
+            else if(type.getCategory() != ShipCategories.L_SHAPE.name() && type.getCategory() != ShipCategories.REGULAR.name()){
+                isErrorLoading = true;
+                errorString += "Bad ship category (type.getCategory())"  + System.getProperty("line.separator");
+            }
             shipTypeMap.put(type.getId(),0);
         }
         return shipTypeMap;
@@ -136,6 +142,7 @@ public class GameManager extends java.util.Observable{
     // Get player spaceships.
     private void initiatePlayerBattleShips(Player player, Board playerBoard, List<ShipTypes.ShipType> shipTypes) {
         List<Board.Ship> ship = playerBoard.getShip();
+
         BattleShip playerShip;
         LinkedHashMap<String,Integer> shipCountMap = createShipTypeMap(shipTypes);
         String currentType;
@@ -165,7 +172,7 @@ public class GameManager extends java.util.Observable{
 
     private BattleShip createAShip(List<Board.Ship> ships, int index, List<ShipTypes.ShipType> shipTypes){
         ShipDirection direction = ShipDirection.valueOf(ships.get(index).getDirection()); // Get battle ship direction.
-        BattleShipsLogic.Definitions.ShipType shipType = BattleShipsLogic.Definitions.ShipType.valueOf(ships.get(index).getShipTypeId()); // Get battle ship type.
+        String shipType = ships.get(index).getShipTypeId(); // Get battle ship type.
         int length = getShipLength(ships.get(index), shipTypes); // Get ship length by type.
         int score = getShipScore(ships.get(index), shipTypes); // Get ship length by type.
         int positionY = ships.get(index).getPosition().getY(); // Get y position.
@@ -175,25 +182,24 @@ public class GameManager extends java.util.Observable{
     }
     
     private int getShipLength(Board.Ship ship, List<ShipTypes.ShipType> shipTypes) {
-        for(int i=0; i<shipTypes.size(); i++) {
-            if(ShipType.valueOf(ship.getShipTypeId()) == ShipType.valueOf(shipTypes.get(i).getId()))
-            {
-                return shipTypes.get(i).getLength();
+        for (ShipTypes.ShipType type:shipTypes) {
+            if(ship.getShipTypeId() == type.getId()){
+                return type.getLength();
             }
         }
+
         return -1;
     }
 
     private int getShipScore(Board.Ship ship, List<ShipTypes.ShipType> shipTypes) {
-        for(int i=0; i<shipTypes.size(); i++) {
-            if(ShipType.valueOf(ship.getShipTypeId()) == ShipType.valueOf(shipTypes.get(i).getId()))
-            {
-                return shipTypes.get(i).getScore();
+        for (ShipTypes.ShipType type:shipTypes) {
+            if(ship.getShipTypeId() == type.getId()){
+                return type.getScore();
             }
         }
+
         return -1;
     }
-
 
     private void setBattleShipToUserBoard(Player player, BattleShip playerShip) {
         Point position = playerShip.getPosition();
