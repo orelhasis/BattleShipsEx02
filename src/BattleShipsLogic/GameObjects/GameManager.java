@@ -102,6 +102,7 @@ public class GameManager extends java.util.Observable{
         loadGame(gameSettings);
         currentPlayer = players[0];
         winnerPlayer = null;
+
         return !isErrorLoading;
     }
 
@@ -124,8 +125,9 @@ public class GameManager extends java.util.Observable{
         // Get Game ship types and player board.
         List<ShipTypes.ShipType> shipTypesList = gameSettings.getShipTypes().getShipType();
         Board playerBoard = gameSettings.getBoards().getBoard().get(playerIndex);
-        // Initiate board.
-        players[playerIndex] = new Player(name, boardSize, playerBoard.getShip().size());
+
+        // Initiate player.
+        players[playerIndex] = new Player(name, boardSize, playerBoard.getShip().size(), gameSettings.getMine().getAmount());
         initiatePlayerBattleShips(players[playerIndex], playerBoard, shipTypesList);
     }
 
@@ -198,7 +200,7 @@ public class GameManager extends java.util.Observable{
 
     private int getShipScore(Board.Ship ship, List<ShipTypes.ShipType> shipTypes) {
         for (ShipTypes.ShipType type:shipTypes) {
-            if(ship.getShipTypeId() == type.getId()){
+            if(ship.getShipTypeId().equals(type.getId())){
                 return type.getScore();
             }
         }
@@ -207,7 +209,7 @@ public class GameManager extends java.util.Observable{
     }
 
     private void setBattleShipToUserBoard(Player player, BattleShip playerShip) {
-        Point position = playerShip.getPosition();
+        Point position = new Point(playerShip.getPosition().getX(), playerShip.getPosition().getY());
         SeaItem[][] board = player.getBoard();
         for(int i = 0 ; i< playerShip.getLength(); i++) {
             // Set item to point to the battle ship. - x AND y ARE REPLACED IN ARRAY
@@ -301,16 +303,21 @@ public class GameManager extends java.util.Observable{
             attackedItem.GotHit();
             attackedPlayer.getBoard()[x][y] = new ShipRemains(x, y);
             // In case of battle ship hit - increase score.
-            currentPlayer.AddScore(1);
+
             currentPlayer.getStatistics().AddHit();
             if(attackedItem.IsDestroyed()){
                 result = MoveResults.Drowned;
                 attackedPlayer.ShipDrowned();
+                currentPlayer.AddScore(attackedItem.GetScore());
             }
             if(attackedPlayer.IsPlayerDestroyed()) {
                 winnerPlayer = currentPlayer;
                 status = GameStatus.OVER;
             }
+        }
+        else if (attackedItem instanceof Mine)
+        {
+            // Do Mine hit case.
         }
         return result;
     }
