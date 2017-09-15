@@ -91,9 +91,14 @@ public class GameManager extends java.util.Observable{
     public boolean LoadGame(BattleShipGame gameSettings){
         errorString = "";
         isErrorLoading = false;
-        if (GameType.BASIC == GameType.valueOf(gameSettings.getGameType())) {
-            type = GameType.BASIC;
+        if (GameType.BASIC == GameType.valueOf(gameSettings.getGameType()) || GameType.ADVANCE == GameType.valueOf(gameSettings.getGameType())) {
+            type = GameType.valueOf(gameSettings.getGameType());
         }
+        else {
+            isErrorLoading = true;
+            errorString += "Game type is undefined";
+        }
+
         loadGame(gameSettings);
         currentPlayer = players[0];
         winnerPlayer = null;
@@ -127,13 +132,13 @@ public class GameManager extends java.util.Observable{
     private LinkedHashMap<String, Integer> createShipTypeMap(List<ShipTypes.ShipType> shipTypes){
         LinkedHashMap<String,Integer> shipTypeMap = new LinkedHashMap<>();
         for (ShipTypes.ShipType type :shipTypes) {
-            if(this.type == GameType.BASIC && type.getCategory() == ShipCategories.L_SHAPE.name()){
+            if(this.type == GameType.BASIC && type.getCategory().equals(ShipCategories.L_SHAPE.name())){
                 isErrorLoading = true;
                 errorString += "Basic Game cannot have an L-Shape Ships!" + System.getProperty("line.separator");
             }
-            else if(type.getCategory() != ShipCategories.L_SHAPE.name() && type.getCategory() != ShipCategories.REGULAR.name()){
+            else if(!type.getCategory().equals(ShipCategories.L_SHAPE.name()) && !type.getCategory().equals(ShipCategories.REGULAR.name())){
                 isErrorLoading = true;
-                errorString += "Bad ship category (type.getCategory())"  + System.getProperty("line.separator");
+                errorString += "Bad ship category "+ type.getCategory() + System.getProperty("line.separator");
             }
             shipTypeMap.put(type.getId(),0);
         }
@@ -183,7 +188,7 @@ public class GameManager extends java.util.Observable{
     
     private int getShipLength(Board.Ship ship, List<ShipTypes.ShipType> shipTypes) {
         for (ShipTypes.ShipType type:shipTypes) {
-            if(ship.getShipTypeId() == type.getId()){
+            if(ship.getShipTypeId().equals(type.getId())){
                 return type.getLength();
             }
         }
