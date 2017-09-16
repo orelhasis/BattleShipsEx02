@@ -142,7 +142,6 @@ public class GameManager extends java.util.Observable{
     // Get player spaceships.
     private void initiatePlayerBattleShips(Player player, Board playerBoard, List<ShipTypes.ShipType> shipTypes) {
         List<Board.Ship> ship = playerBoard.getShip();
-
         BattleShip playerShip;
         LinkedHashMap<String,Integer> shipCountMap = createShipTypeMap(shipTypes);
         String currentType;
@@ -173,12 +172,13 @@ public class GameManager extends java.util.Observable{
     private BattleShip createAShip(List<Board.Ship> ships, int index, List<ShipTypes.ShipType> shipTypes){
         ShipDirection direction = ShipDirection.valueOf(ships.get(index).getDirection()); // Get battle ship direction.
         String shipType = ships.get(index).getShipTypeId(); // Get battle ship type.
+        ShipCategories category = getShipCategoryByType(ships.get(index),shipTypes);
         int length = getShipLength(ships.get(index), shipTypes); // Get ship length by type.
         int score = getShipScore(ships.get(index), shipTypes); // Get ship length by type.
         int positionY = ships.get(index).getPosition().getY(); // Get y position.
         int positionX = ships.get(index).getPosition().getX(); // Get x position.
         // Create new battle ship.
-        return new BattleShip(direction, shipType,length , score, positionX, positionY);
+        return new BattleShip(direction, shipType,length , score, positionX, positionY, category);
     }
     
     private int getShipLength(Board.Ship ship, List<ShipTypes.ShipType> shipTypes) {
@@ -201,7 +201,30 @@ public class GameManager extends java.util.Observable{
         return -1;
     }
 
+    private ShipCategories getShipCategoryByType(Board.Ship ship, List<ShipTypes.ShipType> shipTypes) {
+        for (ShipTypes.ShipType type:shipTypes) {
+            if(ship.getShipTypeId() == type.getId()){
+                if (type.getCategory() == ShipCategories.REGULAR.name()){
+                    return ShipCategories.REGULAR;
+                }
+                else return ShipCategories.L_SHAPE;
+            }
+        }
+        return ShipCategories.L_SHAPE;
+    }
+
     private void setBattleShipToUserBoard(Player player, BattleShip playerShip) {
+        if(playerShip.getShipCategory() == ShipCategories.L_SHAPE){
+            setLShapeShip(player, playerShip);
+        }
+        else setRegularShip(player, playerShip);
+    }
+
+    private void setLShapeShip(Player player, BattleShip playerShip){
+        
+    }
+
+    private void setRegularShip(Player player, BattleShip playerShip){
         Point position = playerShip.getPosition();
         SeaItem[][] board = player.getBoard();
         for(int i = 0 ; i< playerShip.getLength(); i++) {
