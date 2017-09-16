@@ -126,6 +126,8 @@ public abstract class BattleShipUI implements Observer{
                 break;
             case Mine:
                 showHitAMineMessage();
+                swapPlayers();
+                break;
         }
     }
 
