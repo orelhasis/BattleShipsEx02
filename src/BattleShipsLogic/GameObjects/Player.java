@@ -112,8 +112,12 @@ public class Player {
         char[][] tracking = getEmptyBoardForPrint(boardSize);
         for (int i = 0; i < boardSize; i++) {
             for (int j = 0; j < boardSize; j++) {
-                tracking[i+1][j+1] = ' ';
-                if(!(board[i][j] instanceof BattleShip) && !(board[i][j] instanceof Mine)){
+
+                // If the item is a Battle Ship or a not destroyed mine we don't print the item.
+                if((board[i][j] instanceof BattleShip) || ((board[i][j] instanceof Mine) && !((Mine)board[i][j]).IsDestroyed())){
+                    tracking[i+1][j+1] = ' ';
+                }
+                else {
                     tracking[i+1][j+1] = board[i][j].getItemChar();
                 }
             }

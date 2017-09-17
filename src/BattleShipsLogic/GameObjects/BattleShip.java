@@ -1,5 +1,6 @@
 package BattleShipsLogic.GameObjects;
 
+import BattleShipsLogic.Definitions.ShipCategories;
 import BattleShipsLogic.Definitions.ShipDirection;
 
 public class BattleShip extends SeaItem {
@@ -9,10 +10,15 @@ public class BattleShip extends SeaItem {
     private final int length;
     private int remainingPartsCount;
     private int score;
+    private ShipCategories shipCategory;
 
     /* -------------- Getters and setters -------------- */
     public ShipDirection getDirection() {
         return direction;
+    }
+
+    public ShipCategories  getShipCategory() {
+        return shipCategory;
     }
 
     public void setDirection(ShipDirection direction) {
@@ -33,8 +39,9 @@ public class BattleShip extends SeaItem {
 
     /* -------------- Function members -------------- */
 
-    public BattleShip(ShipDirection direction, String type, int length, int score, int x, int y) {
+    public BattleShip(ShipDirection direction, String type, int length, int score, int x, int y, ShipCategories cat) {
         super(x,y);
+        this.shipCategory = cat;
         this.score = score;
         this.direction = direction;
         this.type = type;

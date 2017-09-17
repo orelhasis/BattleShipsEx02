@@ -50,25 +50,31 @@ public abstract class BattleShipUI implements Observer{
     // Load game settings and initiate a game.
     protected Boolean loadGame() {
         UIloadingError = "";
+        boolean isLoadedSuccessfully = true;
         String filePath = getFilePath();
-        boolean isLoadedSuccessfully;
-        try {
-            // Extract game settings.
-            //File file = new File(GAME_SETTINGS_FILE_PATH);
-            File file = new File(filePath);
-            if(!file.exists()){
-                UIloadingError+="File Does not Exist";
+        if (filePath == null){
+            UIloadingError+="Please Select a File" + System.getProperty("line.separator");;
+            isLoadedSuccessfully = false;
+        }else {
+            try {
+                // Extract game settings.
+                //File file = new File(GAME_SETTINGS_FILE_PATH);
+                File file = new File(filePath);
+                if (!file.exists()) {
+                    UIloadingError += "File Does not Exist" + System.getProperty("line.separator");
+                    ;
+                    isLoadedSuccessfully = false;
+                } else {
+                    JAXBContext jaxbContext = JAXBContext.newInstance(BattleShipGame.class);
+                    Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
+                    BattleShipGame gameSettings = (BattleShipGame) jaxbUnmarshaller.unmarshal(file);
+                    isLoadedSuccessfully = theGame.LoadGame(gameSettings);
+                }
+            } catch (JAXBException e) {
+                UIloadingError += "Bad XML file" + System.getProperty("line.separator");
+                ;
                 isLoadedSuccessfully = false;
             }
-            else {
-                JAXBContext jaxbContext = JAXBContext.newInstance(BattleShipGame.class);
-                Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
-                BattleShipGame gameSettings = (BattleShipGame) jaxbUnmarshaller.unmarshal(file);
-                isLoadedSuccessfully = theGame.LoadGame(gameSettings);
-            }
-        } catch (JAXBException e) {
-            UIloadingError+="Bad XML file";
-            isLoadedSuccessfully = false;
         }
         return isLoadedSuccessfully;
     }
@@ -126,6 +132,8 @@ public abstract class BattleShipUI implements Observer{
                 break;
             case Mine:
                 showHitAMineMessage();
+                swapPlayers();
+                break;
         }
     }
 
