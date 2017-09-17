@@ -12,6 +12,7 @@ public class Player {
     private int remainingShips;
     private int score;
     private PlayerStatistics statistics = new PlayerStatistics();
+    private int numberOfMines;
 
     /* -------------- Getters and setters -------------- */
 
@@ -39,6 +40,14 @@ public class Player {
         this.score = score;
     }
 
+    public int getNumberOfMines() {
+        return numberOfMines;
+    }
+
+    public void setNumberOfMines(int numberOfMines) {
+        this.numberOfMines = numberOfMines;
+    }
+
     public void AddScore(int score) {
         this.score += score;
     }
@@ -60,10 +69,11 @@ public class Player {
     }
 
     /* -------------- Function members -------------- */
-    public Player(PlayerName name, int boardSize, int numOfShips) {
+    public Player(PlayerName name, int boardSize, int numOfShips, int numberOfMines) {
         this.numOfShips = this.remainingShips = numOfShips;
         this.name = name;
         this.boardSize = boardSize;
+        this.numberOfMines = numberOfMines;
         setEmptyGrid();
     }
 
@@ -102,8 +112,12 @@ public class Player {
         char[][] tracking = getEmptyBoardForPrint(boardSize);
         for (int i = 0; i < boardSize; i++) {
             for (int j = 0; j < boardSize; j++) {
-                tracking[i+1][j+1] = ' ';
-                if(!(board[i][j] instanceof BattleShip)){
+
+                // If the item is a Battle Ship or a not destroyed mine we don't print the item.
+                if((board[i][j] instanceof BattleShip) || ((board[i][j] instanceof Mine) && !((Mine)board[i][j]).IsDestroyed())){
+                    tracking[i+1][j+1] = ' ';
+                }
+                else {
                     tracking[i+1][j+1] = board[i][j].getItemChar();
                 }
             }

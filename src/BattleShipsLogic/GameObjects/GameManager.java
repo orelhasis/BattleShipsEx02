@@ -93,6 +93,7 @@ public class GameManager extends java.util.Observable{
         loadGame(gameSettings);
         currentPlayer = players[0];
         winnerPlayer = null;
+
         return !isErrorLoading;
     }
 
@@ -129,8 +130,9 @@ public class GameManager extends java.util.Observable{
         // Get Game ship types and player board.
         List<ShipTypes.ShipType> shipTypesList = gameSettings.getShipTypes().getShipType();
         Board playerBoard = gameSettings.getBoards().getBoard().get(playerIndex);
-        // Initiate board.
-        players[playerIndex] = new Player(name, boardSize, playerBoard.getShip().size());
+
+        // Initiate player.
+        players[playerIndex] = new Player(name, boardSize, playerBoard.getShip().size(), gameSettings.getMine().getAmount());
         initiatePlayerBattleShips(players[playerIndex], playerBoard, shipTypesList);
     }
 
@@ -204,7 +206,7 @@ public class GameManager extends java.util.Observable{
 
     private int getShipScore(Board.Ship ship, List<ShipTypes.ShipType> shipTypes) {
         for (ShipTypes.ShipType type:shipTypes) {
-            if(ship.getShipTypeId() == type.getId()){
+            if(ship.getShipTypeId().equals(type.getId())){
                 return type.getScore();
             }
         }
@@ -361,6 +363,7 @@ public class GameManager extends java.util.Observable{
         }
         // Update current player statistics.
         updateStatistics(moveTime);
+
         // Get attacked item in the attacked player grid.
         int x = attackedPoint.getX();
         int y = attackedPoint.getY();
@@ -379,18 +382,67 @@ public class GameManager extends java.util.Observable{
             result = MoveResults.Hit;
             attackedItem.GotHit();
             attackedPlayer.getBoard()[x][y] = new ShipRemains(x, y);
-            // In case of battle ship hit - increase score.
-            currentPlayer.AddScore(1);
+
             currentPlayer.getStatistics().AddHit();
             if(attackedItem.IsDestroyed()){
                 result = MoveResults.Drowned;
                 attackedPlayer.ShipDrowned();
+                currentPlayer.AddScore(attackedItem.GetScore());
             }
             if(attackedPlayer.IsPlayerDestroyed()) {
                 winnerPlayer = currentPlayer;
                 status = GameStatus.OVER;
             }
         }
+        else if (attackedItem instanceof Mine)
+        {
+            attackedItem.GotHit();
+            result = handleMineAttack(attackedPoint);
+        }
+        return result;
+    }
+
+    private MoveResults handleMineAttack(Point attackedPoint) {
+
+        MoveResults result = MoveResults.Mine;
+        Player attackedPlayer = players[0];
+        if(currentPlayer == players[0]) {
+            attackedPlayer = players[1];
+        }
+
+        SeaItem attackedItem = currentPlayer.getBoard()[attackedPoint.getX()][attackedPoint.getY()];
+
+        // Case 1: The match coordinate in the current player board is a water.
+        if(attackedItem instanceof WaterItem)
+        {
+            attackedItem.GotHit();
+        }
+        // Case 2: The match coordinate in the current player board is a battleship.
+        else if (attackedItem instanceof BattleShip)
+        {
+            attackedItem.GotHit();
+            currentPlayer.getBoard()[attackedPoint.getX()][attackedPoint.getY()] = new ShipRemains(attackedPoint.getX(), attackedPoint.getY());
+            if(attackedItem.IsDestroyed()){
+                currentPlayer.ShipDrowned();
+                attackedPlayer.AddScore(attackedItem.GetScore());
+            }
+            if(currentPlayer.IsPlayerDestroyed()) {
+                winnerPlayer = attackedPlayer;
+                status = GameStatus.OVER;
+            }
+        }
+        // Case 3: The match coordinate in the current player board is a mine.
+        else if (attackedItem instanceof Mine)
+        {
+            attackedItem.GotHit();
+        }
+
+        // Add hit to the player only if his battle ship wasn't hit.
+        if(!(attackedItem instanceof BattleShip))
+        {
+            currentPlayer.getStatistics().AddHit();
+        }
+
         return result;
     }
 }
