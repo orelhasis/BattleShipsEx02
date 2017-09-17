@@ -1,14 +1,18 @@
 package FormUI;
 
+import BattleShipsLogic.Definitions.MoveResults;
 import BattleShipsLogic.GameObjects.GameManager;
+import BattleShipsLogic.GameObjects.Point;
 import ConsoleUI.BattleShipUI;
 import javafx.fxml.FXML;
+import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.*;
 import javafx.stage.FileChooser;
-import javafx.stage.Window;
 
-import java.awt.*;
 import java.io.File;
 import java.util.Observable;
 
@@ -25,17 +29,38 @@ public class BattleShipFXUI extends BattleShipUI {
     @FXML private Button attack;
     @FXML private Button gameStatistics;
     @FXML private Button quit;
+    @FXML private AnchorPane opponentGridArea;
+    private Image[][] playerBoard;
+    private Image[][] trackingBoard;
 
     // ----------------------- BattleShipFXUI methods ----------------------- //
 
     @FXML
     public void loadButtonClick() {
         if(!super.loadGame()){
-            startAlert("Failed to load","Could not load game file",UIloadingError);
+            showGameLoadFailedMessage();
+            hideGameButtons();
         }
         else{
-            startAlert("Game Loaded","Successfully loaded the game","You can now start");
+            showGameLoadedMessage();
+            showGamesButtons();
         }
+    }
+
+    @FXML
+    protected void initialize(){
+        hideGameButtons();
+    }
+    private void showGamesButtons() {
+        startGame.setVisible(true);
+        attack.setVisible(true);
+        gameStatistics.setVisible(true);
+    }
+
+    private void hideGameButtons() {
+        //startGame.setVisible(false);
+        attack.setVisible(false);
+        gameStatistics.setVisible(false);
     }
 
     @Override
@@ -68,18 +93,69 @@ public class BattleShipFXUI extends BattleShipUI {
 
     @Override
     protected void showGameLoadedMessage() {
-
+        startAlert("Game Loaded","Successfully loaded the game","You can now start");
     }
 
     @Override
     protected void showGameLoadFailedMessage() {
-
+        startAlert("Failed to load","Could not load game file",UIloadingError);
     }
 
     @Override
+    @FXML
     public void StartGame() {
+        createGrids();
+    }
+
+    private void createGrids() {
+        int boardSize = 10;//theGame.getBoarSize();
+        GridPane grid = new GridPane();
+        for (int r = 0; r < boardSize; r++) {
+            addRowConstrain(grid);
+            for (int c = 0; c < boardSize; c++) {
+                if(r == c && r==0){
+                    addColConstrain(grid);
+                }
+                addPane(grid,c,r);
+            }
+        }
+        opponentGridArea.getChildren().add(grid);
+        opponentGridArea.autosize();
+    }
+
+    private void addColConstrain(GridPane grid) {
+        ColumnConstraints colConstraints = new ColumnConstraints();
+        colConstraints.setHgrow(Priority.SOMETIMES);
+        grid.getColumnConstraints().add(colConstraints);
+    }
+
+    private void addRowConstrain(GridPane grid) {
+        RowConstraints rowConstraints = new RowConstraints();
+        rowConstraints.setVgrow(Priority.SOMETIMES);
+        grid.getRowConstraints().add(rowConstraints);
+    }
+
+    private void addPane(GridPane grid,int colIndex, int rowIndex) {
+        Pane pane = new Pane();
+        Image img = new Image("\\Resources\\water.png",40,40,false,true);
+        ImageView iv =new ImageView(img);
+        pane.getChildren().add(iv);
+        pane.setOnMouseClicked(e -> {
+            long startMoveTime = System.nanoTime();
+            int moveTime = (int) ((System.nanoTime() - startMoveTime)/NANO_SECONDS_IN_SECOND); // Calculate time for a move in seconds.
+            Point attackedPoint = new Point(colIndex,rowIndex);
+            updateBoard(theGame.makeMove(attackedPoint,moveTime),attackedPoint);
+        });
+        grid.add(pane, colIndex, rowIndex);
+    }
+
+    private void updateBoard(MoveResults moveResults, Point attackedPoint) {
+        for (Node d:((GridPane)opponentGridArea.getChildren().get(0)).getChildren()) {
+            if(d.get)
+        }
 
     }
+
 
     @Override
     protected void printGameStartsMessage() {
