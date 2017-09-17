@@ -89,15 +89,25 @@ public class GameManager extends java.util.Observable{
     }
 
     public boolean LoadGame(BattleShipGame gameSettings){
-        errorString = "";
-        isErrorLoading = false;
-        if (GameType.BASIC == GameType.valueOf(gameSettings.getGameType())) {
-            type = GameType.BASIC;
-        }
+        checkGameType(gameSettings);
         loadGame(gameSettings);
         currentPlayer = players[0];
         winnerPlayer = null;
         return !isErrorLoading;
+    }
+
+    private void checkGameType(BattleShipGame gameSettings) {
+        errorString = "";
+        isErrorLoading = false;
+        type = GameType.ADVANCE;
+        if (GameType.BASIC.name().equalsIgnoreCase(gameSettings.getGameType())) {
+            type = GameType.BASIC;
+        }
+        else if (!GameType.ADVANCE.name().equalsIgnoreCase(gameSettings.getGameType())) {
+            type = null;
+            errorString = "Game Type " + gameSettings.getGameType() +" is illegal, Please use BASIC or ADVANCE" + System.getProperty("line.separator");
+            isErrorLoading = true;
+        }
     }
 
     private void loadGame(BattleShipGame gameSettings) {
@@ -127,13 +137,14 @@ public class GameManager extends java.util.Observable{
     private LinkedHashMap<String, Integer> createShipTypeMap(List<ShipTypes.ShipType> shipTypes){
         LinkedHashMap<String,Integer> shipTypeMap = new LinkedHashMap<>();
         for (ShipTypes.ShipType type :shipTypes) {
-            if(this.type == GameType.BASIC && type.getCategory() == ShipCategories.L_SHAPE.name()){
+            if(this.type == GameType.BASIC && ShipCategories.L_SHAPE.name().equalsIgnoreCase(type.getCategory())){
                 isErrorLoading = true;
                 errorString += "Basic Game cannot have an L-Shape Ships!" + System.getProperty("line.separator");
             }
-            else if(type.getCategory() != ShipCategories.L_SHAPE.name() && type.getCategory() != ShipCategories.REGULAR.name()){
+            else if(ShipCategories.L_SHAPE.name().equalsIgnoreCase(type.getCategory())
+                    && ShipCategories.REGULAR.name().equalsIgnoreCase(type.getCategory())){
                 isErrorLoading = true;
-                errorString += "Bad ship category (type.getCategory())"  + System.getProperty("line.separator");
+                errorString += "Bad ship category " + (type.getCategory())  + System.getProperty("line.separator");
             }
             shipTypeMap.put(type.getId(),0);
         }
@@ -183,7 +194,7 @@ public class GameManager extends java.util.Observable{
     
     private int getShipLength(Board.Ship ship, List<ShipTypes.ShipType> shipTypes) {
         for (ShipTypes.ShipType type:shipTypes) {
-            if(ship.getShipTypeId() == type.getId()){
+            if(type.getId().equalsIgnoreCase(ship.getShipTypeId())){
                 return type.getLength();
             }
         }
@@ -203,8 +214,8 @@ public class GameManager extends java.util.Observable{
 
     private ShipCategories getShipCategoryByType(Board.Ship ship, List<ShipTypes.ShipType> shipTypes) {
         for (ShipTypes.ShipType type:shipTypes) {
-            if(ship.getShipTypeId() == type.getId()){
-                if (type.getCategory() == ShipCategories.REGULAR.name()){
+            if(ship.getShipTypeId().equalsIgnoreCase(type.getId())){
+                if (ShipCategories.REGULAR.name().equalsIgnoreCase(type.getCategory())){
                     return ShipCategories.REGULAR;
                 }
                 else return ShipCategories.L_SHAPE;
@@ -221,27 +232,74 @@ public class GameManager extends java.util.Observable{
     }
 
     private void setLShapeShip(Player player, BattleShip playerShip){
-        
+        ShipDirection shipDir= playerShip.getDirection();
+        Point rowPoint,colPoint, pivotPos = playerShip.getPosition();
+        rowPoint = colPoint = pivotPos;
+        boolean continueAddingShip = true;
+        switch (shipDir){
+            case DOWN_RIGHT:
+                colPoint = new Point(pivotPos.getX(),pivotPos.getY()- playerShip.getLength() + 1);
+                break;
+            case RIGHT_DOWN:
+                rowPoint = new Point(pivotPos.getX() - playerShip.getLength() + 1,pivotPos.getY());
+                colPoint = new Point(pivotPos.getX(),pivotPos.getY()+1);
+                break;
+            case RIGHT_UP:
+                rowPoint = new Point(pivotPos.getX() - playerShip.getLength() + 1,pivotPos.getY());
+                colPoint = new Point(pivotPos.getX(),pivotPos.getY()- playerShip.getLength() + 1);
+                break;
+            case UP_RIGHT:
+                colPoint = new Point(pivotPos.getX(),pivotPos.getY() + 1);
+                break;
+            default:
+                isErrorLoading = true;
+                continueAddingShip = false;
+                errorString += "L-Shape ship direction cannot be ROW  or COLUMN!" + System.getProperty("line.separator");
+                break;
+        }
+        if(continueAddingShip){
+            setRowShip(player,rowPoint,playerShip,playerShip.getLength());
+            setColumnShip(player,colPoint,playerShip,playerShip.getLength()-1);
+        }
     }
 
     private void setRegularShip(Player player, BattleShip playerShip){
-        Point position = playerShip.getPosition();
-        SeaItem[][] board = player.getBoard();
-        for(int i = 0 ; i< playerShip.getLength(); i++) {
-            // Set item to point to the battle ship. - x AND y ARE REPLACED IN ARRAY
-            if(isShipOutOfBounds(position.getX(),position.getY())){
-                isErrorLoading = true;
-                errorString+= "A Ship was placed outside of bounds (" + position.getX() +","+ position.getY() + ") for " + player.getName() + System.getProperty("line.separator");
-            }else {
-                setShipInBoard(position.getX() - 1,position.getY() - 1, playerShip, board, player);
+        if (playerShip.getDirection() == ShipDirection.ROW) {
+            setRowShip(player,playerShip.getPosition(),playerShip,playerShip.getLength());
+        } else {
+            setColumnShip(player,playerShip.getPosition(),playerShip,playerShip.getLength());
+        }
+    }
 
-                // Move to next item that should point the battle ship.
-                if (playerShip.getDirection() == ShipDirection.ROW) {
-                    position.setY(position.getY() + 1);
-                } else {
-                    position.setX(position.getX() + 1);
-                }
+    private void setColumnShip(Player player, Point startingPoint, BattleShip playerShip,int length) {
+        int y = startingPoint.getX();
+        int x = startingPoint.getY();
+        SeaItem[][] board = player.getBoard();
+        for (int i = 0; i < length; i++) {
+            // Set item to point to the battle ship. - x AND y ARE REPLACED IN ARRAY
+            if (isShipOutOfBounds(x, y)) {
+                isErrorLoading = true;
+                errorString += "A Ship was placed outside of bounds (" + x + "," + y + "1) for " + player.getName() + System.getProperty("line.separator");
+            } else {
+                setShipInBoard(x - 1, y - 1, playerShip, board, player);
             }
+            x++;
+        }
+    }
+
+    private void setRowShip(Player player, Point startingPoint, BattleShip playerShip,int length) {
+        int y = startingPoint.getX();
+        int x = startingPoint.getY();
+        SeaItem[][] board = player.getBoard();
+        for (int i = 0; i < length; i++) {
+            // Set item to point to the battle ship. - x AND y ARE REPLACED IN ARRAY
+            if (isShipOutOfBounds(x, y)) {
+                isErrorLoading = true;
+                errorString += "A Ship was placed outside of bounds (" + x + "," + y + ") for " + player.getName() + System.getProperty("line.separator");
+            } else {
+                setShipInBoard(x - 1, y - 1, playerShip, board, player);
+            }
+            y++;
         }
     }
 
@@ -250,14 +308,17 @@ public class GameManager extends java.util.Observable{
     }
 
     private void setShipInBoard(int x,int y,BattleShip playerShip, SeaItem[][] board, Player player){
-        boolean isPositionOk = board[x][y] instanceof WaterItem;
+        if(x==1 && y==0){
+            x=1;
+        }
+        boolean isPositionOk = board[x][y] instanceof WaterItem || board[x][y] == playerShip;
         if(x > 0){
             isPositionOk &= board[x-1][y] instanceof WaterItem || board[x-1][y] == playerShip;
             if(y>0) {
                 isPositionOk &= board[x - 1][y - 1] instanceof WaterItem || board[x - 1][y - 1] == playerShip;
             }
             if(y<boardSize-1){
-                isPositionOk &= board[x-1][y+1] instanceof WaterItem || board[x][y+1] == playerShip;
+                isPositionOk &= board[x-1][y+1] instanceof WaterItem || board[x-1][y+1] == playerShip;
             }
         }
         if(y>0) {
