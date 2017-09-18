@@ -46,6 +46,9 @@ public class BattleShip extends SeaItem {
         this.direction = direction;
         this.type = type;
         this.length = this.remainingPartsCount = length;
+        if(shipCategory == ShipCategories.L_SHAPE){
+            this.remainingPartsCount =(this.remainingPartsCount*2) - 1;
+        }
         setItemChar('S');
     }
 

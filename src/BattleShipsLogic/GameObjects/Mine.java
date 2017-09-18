@@ -8,11 +8,17 @@ public class Mine extends SeaItem {
     /* -------------- Function members -------------- */
     public Mine(int x, int y) {
         super(x,y);
-        setItemChar('#');
+        setItemChar('M');
     }
+
+    public Mine(Point position) {
+        super(position);
+        setItemChar('M');
+    }
+
     @Override
     public void GotHit(){
-        setItemChar('X');
+        setItemChar('E');
         super.GotHit();
     }
 }

@@ -137,6 +137,10 @@ public abstract class BattleShipUI implements Observer{
         }
     }
 
+    protected boolean setMineInPosition(Point position){
+        return theGame.getCurrentPlayer().AddMine(position);
+    }
+
     protected void swapPlayers() {
         if(theGame.getCurrentPlayer() == theGame.getPlayers()[0]){
             theGame.setCurrentPlayer(theGame.getPlayers()[1]);
