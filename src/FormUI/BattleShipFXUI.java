@@ -1,7 +1,7 @@
 package FormUI;
 
 import BattleShipsLogic.Definitions.MoveResults;
-import BattleShipsLogic.GameObjects.GameManager;
+import BattleShipsLogic.GameObjects.Player;
 import BattleShipsLogic.GameObjects.Point;
 import ConsoleUI.BattleShipUI;
 import javafx.fxml.FXML;
@@ -21,8 +21,16 @@ public class BattleShipFXUI extends BattleShipUI {
     // ----------------------- Declaration of variables ----------------------- //
 
     static final int NANO_SECONDS_IN_SECOND = 1000000000;
+    static final int CELL_IMAGE_SIZE = 40;
+    static final String WATER_URL = "\\Resources\\water.png";
+    static final String HIT_WATER_URL = "\\Resources\\hitwater.png";
+    static final String BATTLESHIP_URL = "\\Resources\\battleship.png";
+    static final String HIT_BATTLESHIP_URL = "\\Resources\\hitbattleship.png";
+    static final String MINE_URL = "\\Resources\\mine.png";
+    static final String HIT_MINE_URL = "\\Resources\\hitmine.png";
 
-    protected GameManager theGame;
+    static final int START_GAME = 2;
+    static final int GET_GAME_STATUS = 3;
 
     @FXML private Button loadGame;
     @FXML private Button startGame;
@@ -30,9 +38,7 @@ public class BattleShipFXUI extends BattleShipUI {
     @FXML private Button gameStatistics;
     @FXML private Button quit;
     @FXML private AnchorPane opponentGridArea;
-    private Image[][] playerBoard;
-    private Image[][] trackingBoard;
-
+    @FXML private AnchorPane playerGridArea;
     // ----------------------- BattleShipFXUI methods ----------------------- //
 
     @FXML
@@ -105,22 +111,29 @@ public class BattleShipFXUI extends BattleShipUI {
     @FXML
     public void StartGame() {
         createGrids();
+        showBoards(theGame.getCurrentPlayer());
     }
 
     private void createGrids() {
         int boardSize = 10;//theGame.getBoarSize();
-        GridPane grid = new GridPane();
+        GridPane playerGrid = new GridPane();
+        GridPane opponentGrid = new GridPane();
         for (int r = 0; r < boardSize; r++) {
-            addRowConstrain(grid);
+            addRowConstrain(playerGrid);
+            addRowConstrain(opponentGrid );
             for (int c = 0; c < boardSize; c++) {
                 if(r == c && r==0){
-                    addColConstrain(grid);
+                    addColConstrain(playerGrid);
+                    addColConstrain(opponentGrid );
                 }
-                addPane(grid,c,r);
+                addPane(playerGrid,c,r, true);
+                addPane(opponentGrid ,c,r, false);
             }
         }
-        opponentGridArea.getChildren().add(grid);
+        opponentGridArea.getChildren().add(opponentGrid);
+        playerGridArea.getChildren().add(playerGrid);
         opponentGridArea.autosize();
+        playerGridArea.autosize();
     }
 
     private void addColConstrain(GridPane grid) {
@@ -135,25 +148,80 @@ public class BattleShipFXUI extends BattleShipUI {
         grid.getRowConstraints().add(rowConstraints);
     }
 
-    private void addPane(GridPane grid,int colIndex, int rowIndex) {
+    private void addPane(GridPane grid,int colIndex, int rowIndex, boolean isPlayerBoard) {
         Pane pane = new Pane();
-        Image img = new Image("\\Resources\\water.png",40,40,false,true);
-        ImageView iv =new ImageView(img);
+        ImageView iv =new ImageView();
         pane.getChildren().add(iv);
+        if (isPlayerBoard){
+            setOnClickSetMine(pane,colIndex,rowIndex);
+        }
+        else{
+            setOnclickAttackBoard(pane,colIndex,rowIndex);
+        }
+        grid.add(pane, colIndex, rowIndex);
+    }
+
+    private void setOnClickSetMine(Pane pane, int colIndex, int rowIndex) {
+        //TODO: add a check if in history mode
+        pane.setOnMouseClicked(e -> {
+            Point minePoint = new Point(colIndex,rowIndex);
+            if(setMineInPosition(minePoint)){
+                showAMineWasSetMessage();
+                swapPlayers();
+                showBoards(theGame.getCurrentPlayer());
+            }else{
+                showNoMoreMineMessage();
+            }
+        });
+    }
+
+    private void setOnclickAttackBoard(Pane pane, int colIndex, int rowIndex) {
+        //TODO: add a check if in history mode
         pane.setOnMouseClicked(e -> {
             long startMoveTime = System.nanoTime();
             int moveTime = (int) ((System.nanoTime() - startMoveTime)/NANO_SECONDS_IN_SECOND); // Calculate time for a move in seconds.
             Point attackedPoint = new Point(colIndex,rowIndex);
-            updateBoard(theGame.makeMove(attackedPoint,moveTime),attackedPoint);
+            showMoveResults(theGame.makeMove(attackedPoint,moveTime));
+            showBoards(theGame.getCurrentPlayer());
         });
-        grid.add(pane, colIndex, rowIndex);
     }
 
-    private void updateBoard(MoveResults moveResults, Point attackedPoint) {
-        for (Node d:((GridPane)opponentGridArea.getChildren().get(0)).getChildren()) {
-            if(d.get)
+    private ImageView getCellImageView(Point point,GridPane  grid) {
+        for (Node d:grid.getChildren()) {
+            if(grid.getRowIndex(d) == point.getY() && grid.getColumnIndex(d) == point.getX()){
+                return (ImageView)((Pane)d).getChildren().get(0);
+            }
         }
+        return null;
+    }
 
+    private void updateImage(ImageView iv, char repChar){
+        Image img = null;
+        switch (repChar){
+            case 'S':
+                img = getImage(BATTLESHIP_URL);
+                break;
+            case 'O':
+                img = getImage(HIT_BATTLESHIP_URL);
+                break;
+            case 'M':
+                img = getImage(MINE_URL);
+                break;
+            case 'E':
+                img = getImage(HIT_MINE_URL);
+                break;
+            case 'X':
+                img = getImage(HIT_WATER_URL);
+                break;
+            default:
+                img = getImage(WATER_URL);
+                break;
+        }
+        iv.setImage(img);
+    }
+
+    private Image getImage(String url) {
+        return new Image(url,CELL_IMAGE_SIZE,CELL_IMAGE_SIZE,false,true);
     }
 
 
@@ -173,33 +241,48 @@ public class BattleShipFXUI extends BattleShipUI {
     }
 
     @Override
-    protected void showBoards(char[][] board, char[][] trackingboard, String attackPlayerName, String attackedPlayerName) {
-
+    protected void showBoards(char[][] board, char[][] trackingBoard, String attackPlayerName, String attackedPlayerName) {
+        GridPane opponentGrid = (GridPane) opponentGridArea.getChildren().get(0);
+        GridPane playerGrid = (GridPane) playerGridArea.getChildren().get(0);
+        for(int i=1;i<=theGame.getBoarSize();i++){
+            for(int j=1;j<=theGame.getBoarSize();j++){
+                updateImage(getCellImageView(new Point(i-1,j-1),opponentGrid),trackingBoard[i][j]);
+                updateImage(getCellImageView(new Point(i-1,j-1),playerGrid),board[i][j]);
+            }
+        }
     }
 
     @Override
     protected void showUsedMessage() {
+        startAlert("Try Again", "This position was previously attacked","Choose another position to attack");
+    }
 
+    protected void showAMineWasSetMessage() {
+        startAlert("Mine muahaha!", "You have set a mine","Lets wait for them to hit it!, it is now " + theGame.getNextPlayer().getName() + " Turn");
+    }
+
+    protected void showNoMoreMineMessage() {
+        startAlert("No Mine", "Could not add a mine","You are out of mines");
     }
 
     @Override
     protected void showDrownedMessage() {
-
+        startAlert("Destroyed!!!", "You have destroyed an opponent ship!",theGame.getCurrentPlayer().getName().toString() + " have another turn");
     }
 
     @Override
     protected void showHitAMineMessage() {
-
+        startAlert("oh Shoot!", "You hit a mine...","and attacked yourself in that position");
     }
 
     @Override
     protected void showMissMessage() {
-
+        startAlert("Miss!", "You have Missed!","It is now " + theGame.getNextPlayer().getName().toString() + " turn");
     }
 
     @Override
     protected void showHitMessage() {
-
+        startAlert("Hit!", "You have hit an opponent ship!",theGame.getCurrentPlayer().getName().toString() + " have another turn");
     }
 
     @Override

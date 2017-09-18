@@ -153,4 +153,15 @@ public class Player {
     public boolean IsPlayerDestroyed(){
         return this.remainingShips == 0;
     }
+
+    public boolean AddMine(Point position) {
+        boolean successfullyAdded = false;
+        if(numberOfMines > 0){
+            --numberOfMines;
+            //TODO: need to check if it is possible to add a mine here
+            board[position.getX()][position.getY()] = new Mine(position);
+            successfullyAdded = true;
+        }
+        return successfullyAdded;
+    }
 }

@@ -61,7 +61,7 @@
                 </Tab>
                 <Tab text="My Board">
                   <content>
-                    <AnchorPane />
+                    <AnchorPane fx:id="playerGridArea"/>
                   </content>
                 </Tab>
               </tabs>

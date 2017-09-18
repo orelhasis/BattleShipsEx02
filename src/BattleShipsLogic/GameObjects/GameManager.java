@@ -60,6 +60,14 @@ public class GameManager extends java.util.Observable{
         return currentPlayer;
     }
 
+    public Player getNextPlayer() {
+        Player res = players[0];
+        if(currentPlayer == players[0]){
+            res = players[1];
+        }
+        return res;
+    }
+
     public void setCurrentPlayer(Player currentPlayer) {
         this.currentPlayer=currentPlayer;
     }
@@ -132,7 +140,11 @@ public class GameManager extends java.util.Observable{
         Board playerBoard = gameSettings.getBoards().getBoard().get(playerIndex);
 
         // Initiate player.
-        players[playerIndex] = new Player(name, boardSize, playerBoard.getShip().size(), gameSettings.getMine().getAmount());
+        int numOfMines = 0;
+        if(gameSettings.getMine() != null){
+            numOfMines = gameSettings.getMine().getAmount();
+        }
+        players[playerIndex] = new Player(name, boardSize, playerBoard.getShip().size(), numOfMines);
         initiatePlayerBattleShips(players[playerIndex], playerBoard, shipTypesList);
     }
 

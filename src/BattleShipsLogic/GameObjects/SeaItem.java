@@ -15,6 +15,10 @@ public abstract class SeaItem {
         this.position = new Point(x,y);
     }
 
+    SeaItem(Point position) {
+        this.position = position;
+    }
+
     public Point getPosition() {
         return position;
     }
