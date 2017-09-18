@@ -1,6 +1,8 @@
 package FormUI;
 
+import BattleShipsLogic.Definitions.GameStatus;
 import BattleShipsLogic.Definitions.MoveResults;
+import BattleShipsLogic.Definitions.PlayerName;
 import BattleShipsLogic.GameObjects.Player;
 import BattleShipsLogic.GameObjects.Point;
 import ConsoleUI.BattleShipUI;
@@ -8,6 +10,8 @@ import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+
+import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
@@ -39,6 +43,12 @@ public class BattleShipFXUI extends BattleShipUI {
     @FXML private Button quit;
     @FXML private AnchorPane opponentGridArea;
     @FXML private AnchorPane playerGridArea;
+    @FXML private Button prevMove;
+    @FXML private Button nextMove;
+    @FXML private Label moveNumber;
+    @FXML private Label player1Score;
+    @FXML private Label player2Score;
+
     // ----------------------- BattleShipFXUI methods ----------------------- //
 
     @FXML
@@ -50,6 +60,37 @@ public class BattleShipFXUI extends BattleShipUI {
         else{
             showGameLoadedMessage();
             showGamesButtons();
+        }
+    }
+
+    @FXML
+    public void previousMoveButtonClick() {
+        int val = Integer.parseInt(moveNumber.getText());
+        if(val>1)
+            moveNumber.setText(Integer.toString(val-1));
+        showHistory();
+    }
+
+    @FXML
+    public void nextMoveButtonClick() {
+        int val = Integer.parseInt(moveNumber.getText());
+        if(val<theGame.getGameHistory().size())
+            moveNumber.setText(Integer.toString(val+1));
+        showHistory();
+    }
+
+    private void showHistory() {
+        int val = Integer.parseInt(moveNumber.getText());
+        int indexInHistory = val-1;
+        showBoards(theGame.getGameHistory().get(indexInHistory).getPrimaryBoard(), theGame.getGameHistory().get(indexInHistory).getTrackingBoard(), theGame.getGameHistory().get(indexInHistory).getCurrentPlayer().name(), theGame.getGameHistory().get(indexInHistory).getAttackedPlayer().name());
+
+        if(theGame.getGameHistory().get(indexInHistory).getCurrentPlayer().name().equals(PlayerName.PLAYER_1.toString())) {
+            player1Score.setText(Integer.toString(theGame.getGameHistory().get(indexInHistory).getCurrentPlayerScore()));
+            player2Score.setText(Integer.toString(theGame.getGameHistory().get(indexInHistory).getOpponentPlayerScore()));
+        }
+        else {
+            player2Score.setText(Integer.toString(theGame.getGameHistory().get(indexInHistory).getCurrentPlayerScore()));
+            player1Score.setText(Integer.toString(theGame.getGameHistory().get(indexInHistory).getOpponentPlayerScore()));
         }
     }
 
@@ -162,13 +203,14 @@ public class BattleShipFXUI extends BattleShipUI {
     }
 
     private void setOnClickSetMine(Pane pane, int colIndex, int rowIndex) {
-        //TODO: add a check if in history mode
+
         pane.setOnMouseClicked(e -> {
             Point minePoint = new Point(colIndex,rowIndex);
             if(setMineInPosition(minePoint)){
                 showAMineWasSetMessage();
                 swapPlayers();
                 showBoards(theGame.getCurrentPlayer());
+                theGame.saveMove();
             }else{
                 showNoMoreMineMessage();
             }
@@ -176,14 +218,23 @@ public class BattleShipFXUI extends BattleShipUI {
     }
 
     private void setOnclickAttackBoard(Pane pane, int colIndex, int rowIndex) {
-        //TODO: add a check if in history mode
+
         pane.setOnMouseClicked(e -> {
             long startMoveTime = System.nanoTime();
             int moveTime = (int) ((System.nanoTime() - startMoveTime)/NANO_SECONDS_IN_SECOND); // Calculate time for a move in seconds.
             Point attackedPoint = new Point(colIndex,rowIndex);
             showMoveResults(theGame.makeMove(attackedPoint,moveTime));
             showBoards(theGame.getCurrentPlayer());
+            theGame.saveMove();
+            if(theGame.getStatus() == GameStatus.OVER)
+                handleGameOver();
         });
+    }
+
+    private void handleGameOver() {
+        prevMove.setDisable(false);
+        nextMove.setDisable(false);
+        startAlert("Game Over", theGame.getWinnerPlayer().getName().toString() + " you are the winner!", "Thank you and good-bye!");
     }
 
     private ImageView getCellImageView(Point point,GridPane  grid) {
@@ -268,6 +319,7 @@ public class BattleShipFXUI extends BattleShipUI {
     @Override
     protected void showDrownedMessage() {
         startAlert("Destroyed!!!", "You have destroyed an opponent ship!",theGame.getCurrentPlayer().getName().toString() + " have another turn");
+        updateScores();
     }
 
     @Override
@@ -294,4 +346,10 @@ public class BattleShipFXUI extends BattleShipUI {
     public void update(Observable o, Object arg) {
 
     }
+
+    private void updateScores() {
+        player1Score.setText(Integer.toString(theGame.getPlayers()[0].getScore()));
+        player2Score.setText(Integer.toString(theGame.getPlayers()[1].getScore()));
+    }
+
 }
