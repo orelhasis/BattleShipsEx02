@@ -164,7 +164,7 @@ public class BattleShipFXUI extends BattleShipUI {
     private void setOnClickSetMine(Pane pane, int colIndex, int rowIndex) {
         //TODO: add a check if in history mode
         pane.setOnMouseClicked(e -> {
-            Point minePoint = new Point(colIndex,rowIndex);
+            Point minePoint = new Point(rowIndex, colIndex);
             if(setMineInPosition(minePoint)){
                 showAMineWasSetMessage();
                 swapPlayers();
@@ -180,7 +180,7 @@ public class BattleShipFXUI extends BattleShipUI {
         pane.setOnMouseClicked(e -> {
             long startMoveTime = System.nanoTime();
             int moveTime = (int) ((System.nanoTime() - startMoveTime)/NANO_SECONDS_IN_SECOND); // Calculate time for a move in seconds.
-            Point attackedPoint = new Point(colIndex,rowIndex);
+            Point attackedPoint = new Point(rowIndex, colIndex);
             showMoveResults(theGame.makeMove(attackedPoint,moveTime));
             showBoards(theGame.getCurrentPlayer());
         });
