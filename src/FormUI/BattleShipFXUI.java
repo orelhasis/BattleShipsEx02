@@ -104,7 +104,7 @@ public class BattleShipFXUI extends BattleShipUI {
 
     @Override
     protected void showGameLoadFailedMessage() {
-        startAlert("Failed to load","Could not load game file",UIloadingError);
+        startAlert("Failed to load","Could not load game file",UIloadingError + theGame.getLoadingError());
     }
 
     @Override
@@ -246,8 +246,8 @@ public class BattleShipFXUI extends BattleShipUI {
         GridPane playerGrid = (GridPane) playerGridArea.getChildren().get(0);
         for(int i=1;i<=theGame.getBoarSize();i++){
             for(int j=1;j<=theGame.getBoarSize();j++){
-                updateImage(getCellImageView(new Point(i-1,j-1),opponentGrid),trackingBoard[i][j]);
-                updateImage(getCellImageView(new Point(i-1,j-1),playerGrid),board[i][j]);
+                updateImage(getCellImageView(new Point(i-1,j-1),opponentGrid),trackingBoard[j][i]);
+                updateImage(getCellImageView(new Point(i-1,j-1),playerGrid),board[j][i]);
             }
         }
     }
