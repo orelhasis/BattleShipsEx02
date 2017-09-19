@@ -1,11 +1,13 @@
 package FormUI;
 
+import BattleShipsLogic.Definitions.PlayerName;
 import BattleShipsLogic.GameObjects.Point;
 import ConsoleUI.BattleShipUI;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
@@ -37,6 +39,12 @@ public class BattleShipFXUI extends BattleShipUI {
     @FXML private Button quit;
     @FXML private AnchorPane opponentGridArea;
     @FXML private AnchorPane playerGridArea;
+    @FXML private Button prevMove;
+    @FXML private Button nextMove;
+    @FXML private Label moveNumber;
+    @FXML private Label player1Score;
+    @FXML private Label player2Score;
+
     // ----------------------- BattleShipFXUI methods ----------------------- //
 
     @FXML
@@ -65,6 +73,38 @@ public class BattleShipFXUI extends BattleShipUI {
         //startGame.setVisible(false);
         attack.setVisible(false);
         gameStatistics.setVisible(false);
+    }
+
+
+    @FXML
+    public void previousMoveButtonClick() {
+        int val = Integer.parseInt(moveNumber.getText());
+        if(val>1)
+            moveNumber.setText(Integer.toString(val-1));
+        showHistory();
+    }
+
+    @FXML
+    public void nextMoveButtonClick() {
+        int val = Integer.parseInt(moveNumber.getText());
+        if(val<theGame.getGameHistory().size())
+            moveNumber.setText(Integer.toString(val+1));
+        showHistory();
+    }
+
+    private void showHistory() {
+        int val = Integer.parseInt(moveNumber.getText());
+        int indexInHistory = val-1;
+        showBoards(theGame.getGameHistory().get(indexInHistory).getPrimaryBoard(), theGame.getGameHistory().get(indexInHistory).getTrackingBoard(), theGame.getGameHistory().get(indexInHistory).getCurrentPlayer().name(), theGame.getGameHistory().get(indexInHistory).getAttackedPlayer().name());
+
+        if(theGame.getGameHistory().get(indexInHistory).getCurrentPlayer().name().equals(PlayerName.PLAYER_1.toString())) {
+            player1Score.setText(Integer.toString(theGame.getGameHistory().get(indexInHistory).getCurrentPlayerScore()));
+            player2Score.setText(Integer.toString(theGame.getGameHistory().get(indexInHistory).getOpponentPlayerScore()));
+        }
+        else {
+            player2Score.setText(Integer.toString(theGame.getGameHistory().get(indexInHistory).getCurrentPlayerScore()));
+            player1Score.setText(Integer.toString(theGame.getGameHistory().get(indexInHistory).getOpponentPlayerScore()));
+        }
     }
 
     @Override
