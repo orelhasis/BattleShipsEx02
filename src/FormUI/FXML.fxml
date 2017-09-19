@@ -12,6 +12,14 @@
 
 <BorderPane layoutX="0.0" layoutY="0.0" snapToPixel="true" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="FormUI.BattleShipFXUI">
       <bottom>
+          <VBox spacing="10.0">
+          <HBox alignment="BOTTOM_CENTER" spacing="10.0" BorderPane.alignment="BOTTOM_CENTER">
+              <children>
+                  <Button fx:id="prevMove" disable="true" mnemonicParsing="false" onMouseClicked="#previousMoveButtonClick" text="Previous" textAlignment="CENTER" />
+                  <Label fx:id="moveNumber" text="1" />
+                  <Button fx:id="nextMove" disable="true" mnemonicParsing="false" onMouseClicked="#nextMoveButtonClick" text="Next" textAlignment="CENTER" />
+              </children>
+        </HBox>
         <HBox alignment="BOTTOM_CENTER" spacing="10.0" BorderPane.alignment="BOTTOM_CENTER">
           <children>
             <Button fx:id="loadGame" mnemonicParsing="false" onMouseClicked="#loadButtonClick" text="Load Game" textAlignment="CENTER" />
@@ -21,13 +29,14 @@
             <Button fx:id="quit" mnemonicParsing="false" text="Quit" textAlignment="CENTER" />
           </children>
         </HBox>
+          </VBox>
       </bottom>
       <left>
         <VBox alignment="CENTER" spacing="15.0" BorderPane.alignment="TOP_LEFT">
           <children>
             <Label text="Player 1" textFill="BLACK" />
             <Label text="Score" />
-            <Label text="0" />
+            <Label fx:id="player1Score" text="0" />
           </children>
         </VBox>
       </left>
@@ -36,7 +45,7 @@
           <children>
             <Label text="Player 2" />
             <Label text="Score" />
-            <Label text="0" />
+            <Label fx:id="player2Score" text="0" />
           </children>
         </VBox>
       </right>
@@ -61,7 +70,7 @@
                 </Tab>
                 <Tab text="My Board">
                   <content>
-                    <AnchorPane fx:id="playerGridArea"/>
+                    <AnchorPane fx:id="playerGridArea" />
                   </content>
                 </Tab>
               </tabs>

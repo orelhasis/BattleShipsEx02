@@ -5,6 +5,7 @@ import BattleShipsLogic.GameSettings.BattleShipGame;
 import BattleShipsLogic.GameSettings.BattleShipGame.Boards.Board;
 import BattleShipsLogic.GameSettings.BattleShipGame.ShipTypes;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -21,6 +22,7 @@ public class GameManager extends java.util.Observable{
     private int startTimeInSeconds;
     private boolean isErrorLoading;
     private String errorString;
+    private List<GameMove> gameHistory = new ArrayList<>();
 
     /* -------------- Getters and setters -------------- */
 
@@ -88,6 +90,14 @@ public class GameManager extends java.util.Observable{
         this.startTimeInSeconds = startTimeInSeconds;
     }
 
+    public List<GameMove> getGameHistory() {
+        return gameHistory;
+    }
+
+    public void setGameHistory(List<GameMove> gameHistory) {
+        this.gameHistory = gameHistory;
+    }
+
     /* -------------- Function members -------------- */
 
     public GameManager() {
@@ -100,8 +110,8 @@ public class GameManager extends java.util.Observable{
         checkGameType(gameSettings);
         loadGame(gameSettings);
         currentPlayer = players[0];
+        saveMove();
         winnerPlayer = null;
-
         return !isErrorLoading;
     }
 
@@ -411,6 +421,7 @@ public class GameManager extends java.util.Observable{
             attackedItem.GotHit();
             result = handleMineAttack(attackedPoint);
         }
+
         return result;
     }
 
@@ -456,5 +467,14 @@ public class GameManager extends java.util.Observable{
         }
 
         return result;
+    }
+
+    public void saveMove() {
+        Player opponentPlayer = players[0];
+        if(currentPlayer == players[0]){
+            opponentPlayer = players[1];
+        }
+        GameMove newMove = new GameMove(currentPlayer.getPlayerPrimaryGrid(), opponentPlayer.getPlayerTrackingGrid(), currentPlayer.getName(), opponentPlayer.getName(), currentPlayer.getScore(), opponentPlayer.getScore(), boardSize);
+        gameHistory.add(newMove);
     }
 }
