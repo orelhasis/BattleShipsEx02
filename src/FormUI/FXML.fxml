@@ -25,7 +25,7 @@
             <Button fx:id="loadGame" mnemonicParsing="false" onMouseClicked="#loadButtonClick" text="Load Game" textAlignment="CENTER" />
             <Button fx:id="startGame" mnemonicParsing="false" onMouseClicked="#StartGame" text="Start Game" textAlignment="CENTER" />
             <Button fx:id="attack" mnemonicParsing="false" text="Attack" textAlignment="CENTER" />
-            <Button fx:id="gameStatistics" mnemonicParsing="false" text="Game Statistics" textAlignment="CENTER" />
+            <Button fx:id="gameStatistics" mnemonicParsing="false" text="Game Statistics" textAlignment="CENTER" onMouseClicked="#printStatistics"/>
             <Button fx:id="quit" mnemonicParsing="false" text="Quit" textAlignment="CENTER" />
           </children>
         </HBox>

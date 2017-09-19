@@ -274,8 +274,15 @@ public class BattleShipFXUI extends BattleShipUI {
     }
 
     @Override
+    @FXML
     protected void printStatistics() {
-
+        String statistics,  nl = System.getProperty("line.separator");
+        statistics = "Total number of turns: " + Integer.valueOf(theGame.getPlayers()[0].getStatistics().getNumberOfTurns() + Integer.valueOf(theGame.getPlayers()[1].getStatistics().getNumberOfTurns())) + nl;
+        statistics += "Time elapsed: " + calcTime((int) ((System.nanoTime()/NANO_SECONDS_IN_SECOND) - theGame.getStartTime())) + nl;
+        statistics += "Number of hits: " + theGame.getPlayers()[0].getName() + " - " + theGame.getPlayers()[0].getStatistics().getNumberOfHits() + ", " + theGame.getPlayers()[1].getName() + " - " + theGame.getPlayers()[1].getStatistics().getNumberOfHits() + "." + nl;
+        statistics += "Number of misses: " + theGame.getPlayers()[0].getName() + " - " + theGame.getPlayers()[0].getStatistics().getNumberOfMissing() + ", " + theGame.getPlayers()[1].getName() + " - " + theGame.getPlayers()[1].getStatistics().getNumberOfMissing() + "." + nl;
+        statistics += "Average time for attack: " + theGame.getPlayers()[0].getName() + " - " + calcTime(theGame.getPlayers()[0].getStatistics().getAverageTimeForTurn()) + ", " + theGame.getPlayers()[1].getName() + " - " + calcTime(theGame.getPlayers()[1].getStatistics().getAverageTimeForTurn()) + "." + nl;
+        startAlert("Statistics","Current Game Statistics", statistics);
     }
 
     @Override
