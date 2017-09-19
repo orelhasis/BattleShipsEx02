@@ -1,7 +1,5 @@
 package FormUI;
 
-import BattleShipsLogic.Definitions.MoveResults;
-import BattleShipsLogic.GameObjects.Player;
 import BattleShipsLogic.GameObjects.Point;
 import ConsoleUI.BattleShipUI;
 import javafx.fxml.FXML;
@@ -164,7 +162,7 @@ public class BattleShipFXUI extends BattleShipUI {
     private void setOnClickSetMine(Pane pane, int colIndex, int rowIndex) {
         //TODO: add a check if in history mode
         pane.setOnMouseClicked(e -> {
-            Point minePoint = new Point(colIndex,rowIndex);
+            Point minePoint = new Point(rowIndex, colIndex);
             if(setMineInPosition(minePoint)){
                 showAMineWasSetMessage();
                 swapPlayers();
@@ -180,7 +178,7 @@ public class BattleShipFXUI extends BattleShipUI {
         pane.setOnMouseClicked(e -> {
             long startMoveTime = System.nanoTime();
             int moveTime = (int) ((System.nanoTime() - startMoveTime)/NANO_SECONDS_IN_SECOND); // Calculate time for a move in seconds.
-            Point attackedPoint = new Point(colIndex,rowIndex);
+            Point attackedPoint = new Point(rowIndex, colIndex);
             showMoveResults(theGame.makeMove(attackedPoint,moveTime));
             showBoards(theGame.getCurrentPlayer());
         });
@@ -246,8 +244,8 @@ public class BattleShipFXUI extends BattleShipUI {
         GridPane playerGrid = (GridPane) playerGridArea.getChildren().get(0);
         for(int i=1;i<=theGame.getBoarSize();i++){
             for(int j=1;j<=theGame.getBoarSize();j++){
-                updateImage(getCellImageView(new Point(i-1,j-1),opponentGrid),trackingBoard[i][j]);
-                updateImage(getCellImageView(new Point(i-1,j-1),playerGrid),board[i][j]);
+                updateImage(getCellImageView(new Point(i-1,j-1),opponentGrid),trackingBoard[j][i]);
+                updateImage(getCellImageView(new Point(i-1,j-1),playerGrid),board[j][i]);
             }
         }
     }
