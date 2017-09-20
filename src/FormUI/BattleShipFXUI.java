@@ -56,30 +56,24 @@ public class BattleShipFXUI extends BattleShipUI {
     public void loadButtonClick() {
         if(!super.loadGame()){
             showGameLoadFailedMessage();
-            hideGameButtons();
+            setButtonsDisable(new Button[] {startGame, gameStatistics, quit, prevMove, nextMove, }, true);
         }
         else{
             showGameLoadedMessage();
-            showGamesButtons();
+            setButtonsDisable(new Button[] {startGame}, false);
         }
     }
 
     @FXML
     protected void initialize(){
-        hideGameButtons();
-    }
-    private void showGamesButtons() {
-        startGame.setDisable(false);
-        gameStatistics.setDisable(false);
-        quit.setDisable(false);
+        setButtonsDisable(new Button[] {startGame, gameStatistics, quit, prevMove, nextMove, }, true);
     }
 
-    private void hideGameButtons() {
-        startGame.setDisable(true);
-        gameStatistics.setDisable(true);
-        quit.setDisable(true);
+    private void setButtonsDisable(Button[] buttons, boolean val) {
+        for(int i=0; i<buttons.length; i++) {
+            buttons[i].setDisable(val);
+        }
     }
-
 
     @FXML
     public void previousMoveButtonClick() {
@@ -164,6 +158,7 @@ public class BattleShipFXUI extends BattleShipUI {
         theGame.setStatus(GameStatus.RUN);
         showBoards(theGame.getCurrentPlayer());
         startAlert("Game Start", "Let the battle begin!", "Its now Player 1 turn");
+        setButtonsDisable(new Button[]{gameStatistics, quit}, false);
     }
 
     private void createGrids() {
@@ -242,8 +237,8 @@ public class BattleShipFXUI extends BattleShipUI {
             theGame.saveMove();
             showBoards(theGame.getCurrentPlayer());
             if(theGame.getStatus() == GameStatus.OVER) {
-                handleGameOver();
-                hideGameButtons();
+                handleHasWinner();
+                setButtonsDisable(new Button[] {prevMove, nextMove}, false);
             }
         });
     }
@@ -254,9 +249,10 @@ public class BattleShipFXUI extends BattleShipUI {
         return moveTime;
     }
 
-    private void handleGameOver() {
-        prevMove.setDisable(false);
-        nextMove.setDisable(false);
+    private void handleHasWinner() {
+        setButtonsDisable(new Button[] {prevMove, nextMove}, false );
+        setButtonsDisable(new Button[] {quit}, true );
+        theGame.setEndTimeInSeconds((int)(System.nanoTime()/NANO_SECONDS_IN_SECOND));
         startAlert("Game Over", theGame.getWinnerPlayer().getName().toString() + " you are the winner!", "Thank you and good-bye!");
     }
 
@@ -314,7 +310,13 @@ public class BattleShipFXUI extends BattleShipUI {
     protected void printStatistics() {
         String statistics,  nl = System.getProperty("line.separator");
         statistics = "Total number of turns: " + (theGame.getPlayers()[0].getStatistics().getNumberOfTurns() + theGame.getPlayers()[1].getStatistics().getNumberOfTurns()) + nl;
-        statistics += "Time elapsed: " + calcTime((int) ((System.nanoTime()/NANO_SECONDS_IN_SECOND) - theGame.getStartTime())) + nl;
+
+        if (theGame.getStatus() == GameStatus.OVER) {
+            statistics += "Game total time: " + calcTime((theGame.getEndTimeInSeconds() - theGame.getStartTime())) + nl;
+        }
+        else {
+            statistics += "Time elapsed: " + calcTime((int) ((System.nanoTime()/NANO_SECONDS_IN_SECOND) - theGame.getStartTime())) + nl;
+        }
         statistics += "Number of hits: " + theGame.getPlayers()[0].getName() + " - " + theGame.getPlayers()[0].getStatistics().getNumberOfHits() + ", " + theGame.getPlayers()[1].getName() + " - " + theGame.getPlayers()[1].getStatistics().getNumberOfHits() + "." + nl;
         statistics += "Number of misses: " + theGame.getPlayers()[0].getName() + " - " + theGame.getPlayers()[0].getStatistics().getNumberOfMissing() + ", " + theGame.getPlayers()[1].getName() + " - " + theGame.getPlayers()[1].getStatistics().getNumberOfMissing() + "." + nl;
         statistics += "Average time for attack: " + theGame.getPlayers()[0].getName() + " - " + calcTime(theGame.getPlayers()[0].getStatistics().getAverageTimeForTurn()) + ", " + theGame.getPlayers()[1].getName() + " - " + calcTime(theGame.getPlayers()[1].getStatistics().getAverageTimeForTurn()) + "." + nl;
@@ -323,10 +325,11 @@ public class BattleShipFXUI extends BattleShipUI {
 
     @FXML
     protected void quitGame() {
+        theGame.setStatus(GameStatus.OVER);
+        theGame.setEndTimeInSeconds((int)(System.nanoTime()/NANO_SECONDS_IN_SECOND));
         startAlert("Quit Game", theGame.getCurrentPlayer().getName() +" left the game", "Thank you and good-bye!");
-        prevMove.setDisable(false);
-        nextMove.setDisable(false);
-        hideGameButtons();
+        setButtonsDisable(new Button[]{prevMove, nextMove, gameStatistics},false);
+        setButtonsDisable(new Button[]{quit},true);
     }
 
     @Override

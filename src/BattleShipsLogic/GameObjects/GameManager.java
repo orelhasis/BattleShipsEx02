@@ -20,6 +20,7 @@ public class GameManager extends java.util.Observable{
     private Player winnerPlayer;
     private int boardSize;
     private int startTimeInSeconds;
+    private int endTimeInSeconds;
     private int currentTurnStartTimeInSeconds;
     private boolean isErrorLoading;
     private String errorString;
@@ -90,6 +91,14 @@ public class GameManager extends java.util.Observable{
 
     public void setStartTime(int startTimeInSeconds) {
         this.startTimeInSeconds = startTimeInSeconds;
+    }
+
+    public int getEndTimeInSeconds() {
+        return endTimeInSeconds;
+    }
+
+    public void setEndTimeInSeconds(int endTimeInSeconds) {
+        this.endTimeInSeconds = endTimeInSeconds;
     }
 
     public int getCurrentTurnStartTimeInSeconds() {
