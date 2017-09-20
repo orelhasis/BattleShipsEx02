@@ -20,9 +20,11 @@ public class GameManager extends java.util.Observable{
     private Player winnerPlayer;
     private int boardSize;
     private int startTimeInSeconds;
+    private int currentTurnStartTimeInSeconds;
     private boolean isErrorLoading;
     private String errorString;
     private List<GameMove> gameHistory = new ArrayList<>();
+    BattleShipGame gameSettings;
 
     /* -------------- Getters and setters -------------- */
 
@@ -90,12 +92,28 @@ public class GameManager extends java.util.Observable{
         this.startTimeInSeconds = startTimeInSeconds;
     }
 
+    public int getCurrentTurnStartTimeInSeconds() {
+        return currentTurnStartTimeInSeconds;
+    }
+
+    public void setCurrentTurnStartTimeInSeconds(int currentTurnStartTimeInSeconds) {
+        this.currentTurnStartTimeInSeconds = currentTurnStartTimeInSeconds;
+    }
+
     public List<GameMove> getGameHistory() {
         return gameHistory;
     }
 
     public void setGameHistory(List<GameMove> gameHistory) {
         this.gameHistory = gameHistory;
+    }
+
+    public BattleShipGame getGameSettings() {
+        return gameSettings;
+    }
+
+    public void setGameSettings(BattleShipGame gameSettings) {
+        this.gameSettings = gameSettings;
     }
 
     /* -------------- Function members -------------- */
@@ -110,8 +128,11 @@ public class GameManager extends java.util.Observable{
         checkGameType(gameSettings);
         loadGame(gameSettings);
         currentPlayer = players[0];
+        winnerPlayer = null;
+        gameHistory = new ArrayList<>();
         saveMove();
         winnerPlayer = null;
+        this.gameSettings = gameSettings;
         return !isErrorLoading;
     }
 
@@ -383,8 +404,6 @@ public class GameManager extends java.util.Observable{
         if(currentPlayer == players[0]) {
             attackedPlayer = players[1];
         }
-        // Update current player statistics.
-        updateStatistics(moveTime);
 
         // Get attacked item in the attacked player grid.
         int x = attackedPoint.getX();
@@ -420,6 +439,11 @@ public class GameManager extends java.util.Observable{
         {
             attackedItem.GotHit();
             result = handleMineAttack(attackedPoint);
+        }
+
+        // Update current player statistics.
+        if (result != MoveResults.Used) {
+            updateStatistics(moveTime);
         }
 
         return result;
@@ -474,7 +498,7 @@ public class GameManager extends java.util.Observable{
         if(currentPlayer == players[0]){
             opponentPlayer = players[1];
         }
-        GameMove newMove = new GameMove(currentPlayer.getPlayerPrimaryGrid(), opponentPlayer.getPlayerTrackingGrid(), currentPlayer.getName(), opponentPlayer.getName(), currentPlayer.getScore(), opponentPlayer.getScore(), boardSize);
+        GameMove newMove = new GameMove(currentPlayer.getPlayerPrimaryGrid(), opponentPlayer.getPlayerTrackingGrid(), currentPlayer.getName(), players[0].getScore(), players[1].getScore(), players[0].getNumberOfMines(), players[1].getNumberOfMines(), boardSize);
         gameHistory.add(newMove);
     }
 }
