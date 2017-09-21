@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import static java.lang.System.in;
+
 public class GameManager extends java.util.Observable{
 
     /* -------------- Data members -------------- */
@@ -560,5 +562,33 @@ public class GameManager extends java.util.Observable{
         }
         GameMove newMove = new GameMove(currentPlayer.getPlayerPrimaryGrid(), opponentPlayer.getPlayerTrackingGrid(), currentPlayer.getName(), players[0].getScore(), players[1].getScore(), players[0].getNumberOfMines(), players[1].getNumberOfMines(), boardSize);
         gameHistory.add(newMove);
+    }
+
+    public String getRemainingShipsToDestroy() {
+
+         String res = "";
+        Player attackedPlayer = players[0];
+        if (currentPlayer == players[0]) {
+            attackedPlayer = players[1];
+        }
+
+        SeaItem[][] attackedBoard = attackedPlayer.getBoard();
+        List<SeaItem> attackedItemsList = new ArrayList<>();
+
+        int i, j;
+        for (i = 0; i < attackedBoard.length; i++) {
+            for (j = 0; j < attackedBoard.length; j++) {
+                SeaItem attackedItem = attackedBoard[i][j];
+                if ((attackedItem instanceof BattleShip) && !(attackedItemsList.contains(attackedItem))) {
+                    attackedItemsList.add(attackedItem);
+                }
+            }
+        }
+
+        res+=attackedItemsList.size()+" - ";
+        for (SeaItem item: attackedItemsList){
+            res+=((BattleShip)item).getShipCategory()+" ";
+        }
+        return res;
     }
 }
