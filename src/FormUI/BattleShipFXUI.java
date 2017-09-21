@@ -272,6 +272,7 @@ public class BattleShipFXUI extends BattleShipUI {
             ((ImageView)(e.getSource())).setTranslateX(orgTranslateX);
             ((ImageView)(e.getSource())).setTranslateY(orgTranslateY);
             isDragged = false;
+            theGame.updateStatistics();
             tryToPutAMine(e.getSceneX(),e.getSceneY());
             e.consume();
         });
