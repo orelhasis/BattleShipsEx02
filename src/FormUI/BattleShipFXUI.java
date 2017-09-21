@@ -4,6 +4,7 @@ import BattleShipsLogic.Definitions.GameStatus;
 import BattleShipsLogic.Definitions.MoveResults;
 import BattleShipsLogic.Definitions.PlayerName;
 import BattleShipsLogic.GameObjects.Point;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -12,9 +13,11 @@ import javafx.scene.control.Button;
 
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.*;
 import javafx.scene.layout.*;
 import javafx.stage.FileChooser;
 
+import javax.xml.soap.Text;
 import java.io.File;
 import java.util.Observable;
 
@@ -47,8 +50,17 @@ public class BattleShipFXUI extends BattleShipUI {
     @FXML private Label player2Score;
     @FXML private Label player1Mines;
     @FXML private Label player2Mines;
+    @FXML private Label dragMineLabel;
+    @FXML private ImageView dragMine;
     @FXML private ImageView Player1ArrowIV;
     @FXML private ImageView Player2ArrowIV;
+
+    //------For Drag and Drop------//
+    private double orgSceneX;
+    private double orgSceneY;
+    private double orgTranslateX;
+    private double orgTranslateY;
+    private boolean isDragged = false;
     // ----------------------- BattleShipFXUI methods ----------------------- //
 
     @FXML
@@ -70,6 +82,7 @@ public class BattleShipFXUI extends BattleShipUI {
         Player2ArrowIV.setVisible(false);
         Player1ArrowIV.setImage(new Image(ARROW_URL,40,60,true,true));
         Player2ArrowIV.setImage(new Image(ARROW_URL,40,60,true,true));
+        initDraggableMine();
     }
 
     private void setButtonsDisable(Button[] buttons, boolean val) {
@@ -173,7 +186,9 @@ public class BattleShipFXUI extends BattleShipUI {
         theGame.LoadGame(theGame.getGameSettings());
         createGrids();
         updateInfo();
-
+        Boolean isVisibleMining = theGame.getGameSettings().getMine().getAmount() > 0;
+        dragMine.setVisible(isVisibleMining);
+        dragMineLabel.setVisible(isVisibleMining);
         theGame.setStartTime((int)(System.nanoTime()/NANO_SECONDS_IN_SECOND));
         theGame.setCurrentTurnStartTimeInSeconds((int)(System.nanoTime()/NANO_SECONDS_IN_SECOND));
         theGame.setStatus(GameStatus.RUN);
@@ -225,20 +240,51 @@ public class BattleShipFXUI extends BattleShipUI {
         Pane pane = new Pane();
         ImageView iv =new ImageView();
         pane.getChildren().add(iv);
-        if (isPlayerBoard){
-            setOnClickSetMine(pane,colIndex,rowIndex);
-        }
-        else{
+        if (!isPlayerBoard){
             setOnclickAttackBoard(pane,colIndex,rowIndex);
         }
         grid.add(pane, colIndex, rowIndex);
     }
 
-    private void setOnClickSetMine(Pane pane, int colIndex, int rowIndex) {
-        pane.setOnMouseClicked(e -> {
-            Point minePoint = new Point(rowIndex, colIndex);
-            setMineInPosition(minePoint);
+    private void initDraggableMine() {
+        dragMine.setVisible(false);
+        dragMineLabel.setVisible(false);
+        dragMine.setImage(getImage(MINE_URL));
+        dragMine.getParent().toFront();
+        dragMine.setOnDragDetected(a-> dragMine.startFullDrag());
+        dragMine.setOnMouseDragged (e -> {
+            if(!isDragged){
+                orgSceneX = e.getSceneX();
+                orgSceneY = e.getSceneY();
+                orgTranslateX = ((ImageView)(e.getSource())).getTranslateX();
+                orgTranslateY = ((ImageView)(e.getSource())).getTranslateY();
+                isDragged = true;
+            }
+            dragMine.toFront();
+            double offsetX = e.getSceneX() - orgSceneX;
+            double offsetY = e.getSceneY() - orgSceneY;
+            double newTranslateX = orgTranslateX + offsetX;
+            double newTranslateY = orgTranslateY + offsetY;
+            ((ImageView)(e.getSource())).setTranslateX(newTranslateX);
+            ((ImageView)(e.getSource())).setTranslateY(newTranslateY);
         });
+        dragMine.setOnMouseReleased (e->{
+            ((ImageView)(e.getSource())).setTranslateX(orgTranslateX);
+            ((ImageView)(e.getSource())).setTranslateY(orgTranslateY);
+            isDragged = false;
+            tryToPutAMine(e.getSceneX(),e.getSceneY());
+            e.consume();
+        });
+    }
+
+    private void tryToPutAMine(double x, double y) {
+        GridPane theGrid = (GridPane)opponentGridArea.getContent();
+        for (Node d:theGrid.getChildren()) {
+            if(d.localToScene(d.getBoundsInLocal()).contains(x,y)){
+                Point minePoint = new Point(theGrid.getRowIndex(d), theGrid.getColumnIndex(d));
+                setMineInPosition(minePoint);
+            }
+        }
     }
 
     @Override
