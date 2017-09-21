@@ -5,6 +5,7 @@ import BattleShipsLogic.GameSettings.BattleShipGame;
 import BattleShipsLogic.GameSettings.BattleShipGame.Boards.Board;
 import BattleShipsLogic.GameSettings.BattleShipGame.ShipTypes;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -19,8 +20,13 @@ public class GameManager extends java.util.Observable{
     private Player winnerPlayer;
     private int boardSize;
     private int startTimeInSeconds;
+    private int endTimeInSeconds;
+    private int currentTurnStartTimeInSeconds;
     private boolean isErrorLoading;
     private String errorString;
+    private List<GameMove> gameHistory = new ArrayList<>();
+    private BattleShipGame gameSettings;
+    private final int NANO_SECONDS_IN_SECOND = 1000000000;
 
     /* -------------- Getters and setters -------------- */
 
@@ -88,6 +94,38 @@ public class GameManager extends java.util.Observable{
         this.startTimeInSeconds = startTimeInSeconds;
     }
 
+    public int getEndTimeInSeconds() {
+        return endTimeInSeconds;
+    }
+
+    public void setEndTimeInSeconds(int endTimeInSeconds) {
+        this.endTimeInSeconds = endTimeInSeconds;
+    }
+
+    public int getCurrentTurnStartTimeInSeconds() {
+        return currentTurnStartTimeInSeconds;
+    }
+
+    public void setCurrentTurnStartTimeInSeconds(int currentTurnStartTimeInSeconds) {
+        this.currentTurnStartTimeInSeconds = currentTurnStartTimeInSeconds;
+    }
+
+    public List<GameMove> getGameHistory() {
+        return gameHistory;
+    }
+
+    public void setGameHistory(List<GameMove> gameHistory) {
+        this.gameHistory = gameHistory;
+    }
+
+    public BattleShipGame getGameSettings() {
+        return gameSettings;
+    }
+
+    public void setGameSettings(BattleShipGame gameSettings) {
+        this.gameSettings = gameSettings;
+    }
+
     /* -------------- Function members -------------- */
 
     public GameManager() {
@@ -99,9 +137,15 @@ public class GameManager extends java.util.Observable{
     public boolean LoadGame(BattleShipGame gameSettings){
         checkGameType(gameSettings);
         loadGame(gameSettings);
+        if(isErrorLoading){
+            return !isErrorLoading;
+        }
         currentPlayer = players[0];
         winnerPlayer = null;
-
+        gameHistory = new ArrayList<>();
+        saveMove();
+        winnerPlayer = null;
+        this.gameSettings = gameSettings;
         return !isErrorLoading;
     }
 
@@ -114,13 +158,17 @@ public class GameManager extends java.util.Observable{
         }
         else if (!GameType.ADVANCE.name().equalsIgnoreCase(gameSettings.getGameType())) {
             type = null;
-            errorString = "Game Type " + gameSettings.getGameType() +" is illegal, Please use BASIC or ADVANCE" + System.getProperty("line.separator");
+            errorString += "Game Type " + gameSettings.getGameType() +" is illegal, Please use BASIC or ADVANCE" + System.getProperty("line.separator");
             isErrorLoading = true;
         }
     }
 
     private void loadGame(BattleShipGame gameSettings) {
         this.boardSize =  gameSettings.getBoardSize();
+        if(boardSize < 5 || boardSize>20){
+            errorString += "Board Size must be between 5 and 20";
+            isErrorLoading = true;
+        }
         initializePlayer(gameSettings, PlayerName.PLAYER_1);
         initializePlayer(gameSettings, PlayerName.PLAYER_2);
     }
@@ -359,22 +407,68 @@ public class GameManager extends java.util.Observable{
         }
     }
 
-    private void updateStatistics(int moveTime){
+    public MineMoveResult SetMineInPosition(Point location){
+        SeaItem[][] board = getCurrentPlayer().getBoard();
+        int x = location.getX();
+        int y = location.getY();
+        boolean resultOK = true;
+        if(!(board[x][y] instanceof WaterItem)){
+            return MineMoveResult.PositionIsTaken;
+        }
+        else if(board[x][y].IsDestroyed()){
+            return MineMoveResult.WasHit;
+        }
+        if(x > 0){
+            resultOK &= board[x-1][y] instanceof WaterItem;
+            if(y>0) {
+                resultOK &= board[x - 1][y - 1] instanceof WaterItem;
+            }
+            if(y<boardSize-1){
+                resultOK &= board[x-1][y+1] instanceof WaterItem;
+            }
+        }
+        if(y>0) {
+            resultOK &= board[x][y - 1] instanceof WaterItem;
+        }
+        if(x < boardSize-1){
+            resultOK &= board[x+1][y] instanceof WaterItem;
+            if(y<boardSize-1){
+                resultOK &= board[x+1][y+1] instanceof WaterItem;
+            }
+            if(y>0){
+                resultOK &= board[x+1][y-1] instanceof WaterItem;
+            }
+        }
+        if(y<boardSize-1){
+            resultOK &= board[x][y+1] instanceof WaterItem;
+        }
+        if (resultOK){
+            if (!getCurrentPlayer().AddMine(location)){
+                return MineMoveResult.NoMinesLeft;
+            }
+            return MineMoveResult.Success;
+        }
+        else{
+            return MineMoveResult.MineOverLapping;
+        }
+    }
+
+    public void updateStatistics(){
+        int moveTime = (int) ((System.nanoTime()/NANO_SECONDS_IN_SECOND) - currentTurnStartTimeInSeconds);
         int numberOfTurns = currentPlayer.getStatistics().getNumberOfTurns();
         int averageTimeOfTurn = currentPlayer.getStatistics().getAverageTimeForTurn();
         int newAverage = ((numberOfTurns*averageTimeOfTurn)+moveTime)/(numberOfTurns+1);
         currentPlayer.getStatistics().setAverageTimeForTurn(newAverage);
         currentPlayer.getStatistics().setNumberOfTurns(numberOfTurns+1);
+        currentTurnStartTimeInSeconds = (int)(System.nanoTime()/NANO_SECONDS_IN_SECOND);
     }
 
-    public MoveResults makeMove(Point attackedPoint, int moveTime) {
+    public MoveResults makeMove(Point attackedPoint) {
         MoveResults result = MoveResults.Miss;
         Player attackedPlayer = players[0];
         if(currentPlayer == players[0]) {
             attackedPlayer = players[1];
         }
-        // Update current player statistics.
-        updateStatistics(moveTime);
 
         // Get attacked item in the attacked player grid.
         int x = attackedPoint.getX();
@@ -411,6 +505,7 @@ public class GameManager extends java.util.Observable{
             attackedItem.GotHit();
             result = handleMineAttack(attackedPoint);
         }
+
         return result;
     }
 
@@ -456,5 +551,14 @@ public class GameManager extends java.util.Observable{
         }
 
         return result;
+    }
+
+    public void saveMove() {
+        Player opponentPlayer = players[0];
+        if(currentPlayer == players[0]){
+            opponentPlayer = players[1];
+        }
+        GameMove newMove = new GameMove(currentPlayer.getPlayerPrimaryGrid(), opponentPlayer.getPlayerTrackingGrid(), currentPlayer.getName(), players[0].getScore(), players[1].getScore(), players[0].getNumberOfMines(), players[1].getNumberOfMines(), boardSize);
+        gameHistory.add(newMove);
     }
 }

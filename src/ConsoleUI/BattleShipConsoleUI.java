@@ -3,7 +3,7 @@ package ConsoleUI;
 import BattleShipsLogic.Definitions.GameStatus;
 import BattleShipsLogic.Definitions.MoveResults;
 import BattleShipsLogic.GameObjects.Point;
-
+import FormUI.BattleShipUI;
 import java.util.Observable;
 import java.util.Scanner;
 
@@ -220,12 +220,27 @@ public class BattleShipConsoleUI extends BattleShipUI {
             attackedPoint = getAttackedPoint();
         }while(!isLegalPoint(attackedPoint));
         int moveTime = (int) ((System.nanoTime() - startMoveTime)/NANO_SECONDS_IN_SECOND); // Calculate time for a move in seconds.
-        return attackAPoint(attackedPoint, moveTime);
+        return attackAPoint(attackedPoint);
     }
 
     @Override
     protected void showUsedMessage() {
         System.out.println("Bad Luck " + theGame.getCurrentPlayer().getName().toString() + " this choice is used");
+    }
+
+    @Override
+    protected void showMineBadPositionMessage() {
+        System.out.println("A mine in this position Overlaps with another mine or ship");
+    }
+
+    @Override
+    protected void showMinePositionIsTakenMessage(){
+        System.out.println("There is already a ship or a mine here!");
+    }
+
+    @Override
+    protected void showMinePositionWasHitMessage() {
+        System.out.println("This position was previously attacked, You don't want to put a mine here....");
     }
 
     @Override
