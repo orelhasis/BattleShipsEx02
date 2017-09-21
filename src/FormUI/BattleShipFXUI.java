@@ -180,6 +180,7 @@ public class BattleShipFXUI extends BattleShipUI {
         showBoards(theGame.getCurrentPlayer());
         startAlert("Game Start", "Let the battle begin!", "Its now Player 1 turn");
         setButtonsDisable(new Button[]{gameStatistics, quit}, false);
+        setButtonsDisable(new Button[]{startGame}, true);
         showCurrentPlayerArrow(theGame.getCurrentPlayer().getName());
     }
 
@@ -258,7 +259,7 @@ public class BattleShipFXUI extends BattleShipUI {
             showBoards(theGame.getCurrentPlayer());
             if(theGame.getStatus() == GameStatus.OVER) {
                 handleHasWinner();
-                setButtonsDisable(new Button[] {prevMove, nextMove}, false);
+                setButtonsDisable(new Button[] {prevMove, nextMove, startGame}, false);
             }
         });
     }
@@ -334,7 +335,14 @@ public class BattleShipFXUI extends BattleShipUI {
         statistics += "Number of hits: " + theGame.getPlayers()[0].getName() + " - " + theGame.getPlayers()[0].getStatistics().getNumberOfHits() + ", " + theGame.getPlayers()[1].getName() + " - " + theGame.getPlayers()[1].getStatistics().getNumberOfHits() + "." + nl;
         statistics += "Number of misses: " + theGame.getPlayers()[0].getName() + " - " + theGame.getPlayers()[0].getStatistics().getNumberOfMissing() + ", " + theGame.getPlayers()[1].getName() + " - " + theGame.getPlayers()[1].getStatistics().getNumberOfMissing() + "." + nl;
         statistics += "Average time for attack: " + theGame.getPlayers()[0].getName() + " - " + calcTime(theGame.getPlayers()[0].getStatistics().getAverageTimeForTurn()) + ", " + theGame.getPlayers()[1].getName() + " - " + calcTime(theGame.getPlayers()[1].getStatistics().getAverageTimeForTurn()) + "." + nl;
-        startAlert("Statistics","Current Game Statistics", statistics);
+
+        int numberOfShipsToAttack = theGame.getPlayers()[0].getRemainingShips();
+        if(theGame.getCurrentPlayer() == theGame.getPlayers()[0]){
+            numberOfShipsToAttack = theGame.getPlayers()[1].getRemainingShips();
+        }
+        statistics += "Remaining ships to destroy: " + numberOfShipsToAttack + "." + nl;
+
+        startAlert("Statistics","Game Statistics", statistics);
     }
 
     @FXML
@@ -342,7 +350,7 @@ public class BattleShipFXUI extends BattleShipUI {
         theGame.setStatus(GameStatus.OVER);
         theGame.setEndTimeInSeconds((int)(System.nanoTime()/NANO_SECONDS_IN_SECOND));
         startAlert("Quit Game", theGame.getCurrentPlayer().getName() +" left the game", "Thank you and good-bye!");
-        setButtonsDisable(new Button[]{prevMove, nextMove, gameStatistics},false);
+        setButtonsDisable(new Button[]{prevMove, nextMove, gameStatistics, startGame},false);
         setButtonsDisable(new Button[]{quit},true);
     }
 

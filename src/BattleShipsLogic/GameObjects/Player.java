@@ -32,6 +32,14 @@ public class Player {
         this.boardSize = boardSize;
     }
 
+    public int getRemainingShips() {
+        return remainingShips;
+    }
+
+    public void setRemainingShips(int remainingShips) {
+        this.remainingShips = remainingShips;
+    }
+
     public int getScore() {
         return score;
     }
