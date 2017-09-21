@@ -164,7 +164,7 @@ public class BattleShipFXUI extends BattleShipUI {
 
     @Override
     protected void showGameLoadFailedMessage() {
-        startAlert("Failed to load","Could not load game file",UIloadingError);
+        startAlert("Failed to load","Could not load game file",UIloadingError + theGame.getLoadingError());
     }
 
     @Override
