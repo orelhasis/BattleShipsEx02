@@ -234,22 +234,9 @@ public class BattleShipFXUI extends BattleShipUI {
     }
 
     private void setOnClickSetMine(Pane pane, int colIndex, int rowIndex) {
-
         pane.setOnMouseClicked(e -> {
             Point minePoint = new Point(rowIndex, colIndex);
             setMineInPosition(minePoint);
-            // To DO: Check set mine position
-            if(setMineInPosition(minePoint)){
-                // If the position in not valid do not enter here!
-                theGame.updateStatistics();
-                updateInfo();
-                theGame.saveMove();
-                showAMineWasSetMessage();
-                swapPlayers();
-                showBoards(theGame.getCurrentPlayer());
-            }else{
-                showNoMoreMineMessage();
-            }
         });
     }
 
@@ -260,7 +247,6 @@ public class BattleShipFXUI extends BattleShipUI {
     }
 
     private void setOnclickAttackBoard(Pane pane, int colIndex, int rowIndex) {
-
         pane.setOnMouseClicked(e -> {
             Point attackedPoint = new Point(rowIndex, colIndex);
             MoveResults result = theGame.makeMove(attackedPoint);
