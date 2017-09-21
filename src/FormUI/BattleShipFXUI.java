@@ -1,11 +1,9 @@
 package FormUI;
 
 import BattleShipsLogic.Definitions.GameStatus;
+import BattleShipsLogic.Definitions.MoveResults;
 import BattleShipsLogic.Definitions.PlayerName;
-import BattleShipsLogic.GameObjects.GameManager;
-import BattleShipsLogic.GameObjects.Player;
 import BattleShipsLogic.GameObjects.Point;
-import ConsoleUI.BattleShipUI;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -24,7 +22,6 @@ public class BattleShipFXUI extends BattleShipUI {
 
     // ----------------------- Declaration of variables ----------------------- //
 
-    static final int NANO_SECONDS_IN_SECOND = 1000000000;
     static final int CELL_IMAGE_SIZE = 25;
     static final String WATER_URL = "\\Resources\\water.png";
     static final String HIT_WATER_URL = "\\Resources\\hitwater.png";
@@ -241,12 +238,23 @@ public class BattleShipFXUI extends BattleShipUI {
         pane.setOnMouseClicked(e -> {
             Point minePoint = new Point(rowIndex, colIndex);
             setMineInPosition(minePoint);
+            // To DO: Check set mine position
+            if(setMineInPosition(minePoint)){
+                // If the position in not valid do not enter here!
+                theGame.updateStatistics();
+                updateInfo();
+                theGame.saveMove();
+                showAMineWasSetMessage();
+                swapPlayers();
+                showBoards(theGame.getCurrentPlayer());
+            }else{
+                showNoMoreMineMessage();
+            }
         });
     }
 
     @Override
     protected void mineAddedSuccess(){
-        updateTurnStatistics();
         updateInfo();
         super.mineAddedSuccess();
     }
@@ -254,9 +262,12 @@ public class BattleShipFXUI extends BattleShipUI {
     private void setOnclickAttackBoard(Pane pane, int colIndex, int rowIndex) {
 
         pane.setOnMouseClicked(e -> {
-            int moveTime = updateTurnStatistics();
             Point attackedPoint = new Point(rowIndex, colIndex);
-            showMoveResults(theGame.makeMove(attackedPoint,moveTime));
+            MoveResults result = theGame.makeMove(attackedPoint);
+            if(result!=MoveResults.Used) {
+                theGame.updateStatistics();
+            }
+            showMoveResults(result);
             theGame.saveMove();
             showBoards(theGame.getCurrentPlayer());
             if(theGame.getStatus() == GameStatus.OVER) {
@@ -264,12 +275,6 @@ public class BattleShipFXUI extends BattleShipUI {
                 setButtonsDisable(new Button[] {prevMove, nextMove}, false);
             }
         });
-    }
-
-    private int updateTurnStatistics() {
-        int moveTime = (int) ((System.nanoTime()/NANO_SECONDS_IN_SECOND) - theGame.getCurrentTurnStartTimeInSeconds());
-        theGame.setCurrentTurnStartTimeInSeconds((int)(System.nanoTime()/NANO_SECONDS_IN_SECOND));
-        return moveTime;
     }
 
     private void handleHasWinner() {

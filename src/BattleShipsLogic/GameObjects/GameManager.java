@@ -25,7 +25,8 @@ public class GameManager extends java.util.Observable{
     private boolean isErrorLoading;
     private String errorString;
     private List<GameMove> gameHistory = new ArrayList<>();
-    BattleShipGame gameSettings;
+    private BattleShipGame gameSettings;
+    private final int NANO_SECONDS_IN_SECOND = 1000000000;
 
     /* -------------- Getters and setters -------------- */
 
@@ -136,6 +137,9 @@ public class GameManager extends java.util.Observable{
     public boolean LoadGame(BattleShipGame gameSettings){
         checkGameType(gameSettings);
         loadGame(gameSettings);
+        if(isErrorLoading){
+            return !isErrorLoading;
+        }
         currentPlayer = players[0];
         winnerPlayer = null;
         gameHistory = new ArrayList<>();
@@ -154,13 +158,17 @@ public class GameManager extends java.util.Observable{
         }
         else if (!GameType.ADVANCE.name().equalsIgnoreCase(gameSettings.getGameType())) {
             type = null;
-            errorString = "Game Type " + gameSettings.getGameType() +" is illegal, Please use BASIC or ADVANCE" + System.getProperty("line.separator");
+            errorString += "Game Type " + gameSettings.getGameType() +" is illegal, Please use BASIC or ADVANCE" + System.getProperty("line.separator");
             isErrorLoading = true;
         }
     }
 
     private void loadGame(BattleShipGame gameSettings) {
         this.boardSize =  gameSettings.getBoardSize();
+        if(boardSize < 5 || boardSize>20){
+            errorString += "Board Size must be between 5 and 20";
+            isErrorLoading = true;
+        }
         initializePlayer(gameSettings, PlayerName.PLAYER_1);
         initializePlayer(gameSettings, PlayerName.PLAYER_2);
     }
@@ -445,15 +453,17 @@ public class GameManager extends java.util.Observable{
         }
     }
 
-    private void updateStatistics(int moveTime){
+    public void updateStatistics(){
+        int moveTime = (int) ((System.nanoTime()/NANO_SECONDS_IN_SECOND) - currentTurnStartTimeInSeconds);
         int numberOfTurns = currentPlayer.getStatistics().getNumberOfTurns();
         int averageTimeOfTurn = currentPlayer.getStatistics().getAverageTimeForTurn();
         int newAverage = ((numberOfTurns*averageTimeOfTurn)+moveTime)/(numberOfTurns+1);
         currentPlayer.getStatistics().setAverageTimeForTurn(newAverage);
         currentPlayer.getStatistics().setNumberOfTurns(numberOfTurns+1);
+        currentTurnStartTimeInSeconds = (int)(System.nanoTime()/NANO_SECONDS_IN_SECOND);
     }
 
-    public MoveResults makeMove(Point attackedPoint, int moveTime) {
+    public MoveResults makeMove(Point attackedPoint) {
         MoveResults result = MoveResults.Miss;
         Player attackedPlayer = players[0];
         if(currentPlayer == players[0]) {
@@ -494,11 +504,6 @@ public class GameManager extends java.util.Observable{
         {
             attackedItem.GotHit();
             result = handleMineAttack(attackedPoint);
-        }
-
-        // Update current player statistics.
-        if (result != MoveResults.Used) {
-            updateStatistics(moveTime);
         }
 
         return result;

@@ -3,7 +3,7 @@ package ConsoleUI;
 import BattleShipsLogic.Definitions.GameStatus;
 import BattleShipsLogic.Definitions.MoveResults;
 import BattleShipsLogic.GameObjects.Point;
-
+import FormUI.BattleShipUI;
 import java.util.Observable;
 import java.util.Scanner;
 
@@ -220,7 +220,7 @@ public class BattleShipConsoleUI extends BattleShipUI {
             attackedPoint = getAttackedPoint();
         }while(!isLegalPoint(attackedPoint));
         int moveTime = (int) ((System.nanoTime() - startMoveTime)/NANO_SECONDS_IN_SECOND); // Calculate time for a move in seconds.
-        return attackAPoint(attackedPoint, moveTime);
+        return attackAPoint(attackedPoint);
     }
 
     @Override

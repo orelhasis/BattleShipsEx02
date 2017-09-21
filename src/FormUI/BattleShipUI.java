@@ -1,4 +1,4 @@
-package ConsoleUI;
+package FormUI;
 
 import BattleShipsLogic.Definitions.MineMoveResult;
 import BattleShipsLogic.Definitions.MoveResults;
@@ -15,14 +15,14 @@ import java.util.Observer;
 
 public abstract class BattleShipUI implements Observer{
 
-    static final int LOAD_GAME = 1;
-    static final int START_GAME = 2;
-    static final int GET_GAME_STATUS = 3;
-    static final int MAKE_A_MOVE = 4;
-    static final int GET_STATISTICS = 5;
-    static final int QUIT = 6;
-    static final int EXIT_GAME = 7;
-    static final int NANO_SECONDS_IN_SECOND = 1000000000;
+    protected static final int LOAD_GAME = 1;
+    protected static final int START_GAME = 2;
+    protected static final int GET_GAME_STATUS = 3;
+    protected static final int MAKE_A_MOVE = 4;
+    protected static final int GET_STATISTICS = 5;
+    protected static final int QUIT = 6;
+    protected static final int EXIT_GAME = 7;
+    protected static final int NANO_SECONDS_IN_SECOND = 1000000000;
 
     protected GameManager theGame;
     protected String UIloadingError;
@@ -121,8 +121,8 @@ public abstract class BattleShipUI implements Observer{
         showBoards(player.getPlayerPrimaryGrid(), otherPlayer.getPlayerTrackingGrid(), player.getName().toString(), otherPlayer.getName().toString());
     }
 
-    protected MoveResults attackAPoint(Point pointToAttack, int moveTime) {
-        return theGame.makeMove(pointToAttack, moveTime);
+    protected MoveResults attackAPoint(Point pointToAttack) {
+        return theGame.makeMove(pointToAttack);
     }
 
     protected void showMoveResults(MoveResults moveResults){
