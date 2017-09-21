@@ -12,6 +12,7 @@
 <?import javafx.scene.text.Font?>
 
 <?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.image.ImageView?>
 <BorderPane layoutX="0.0" layoutY="0.0" snapToPixel="true" style="-fx-background-image: url('/Resources/battleships_background.jpg');" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="FormUI.BattleShipFXUI">
   <bottom>
     <VBox spacing="10.0">
@@ -65,23 +66,25 @@
   <left>
     <VBox alignment="CENTER" spacing="15.0" BorderPane.alignment="TOP_LEFT">
       <children>
-        <Label text="Player 1" textFill="WHITE">
+          <ImageView fx:id="Player1ArrowIV" >
+          </ImageView>
+        <Label text="Player 1" textFill="BLACK">
                <font>
                   <Font name="System Bold Italic" size="24.0" />
                </font></Label>
-        <Label text="Score" textFill="WHITE">
+        <Label text="Score" textFill="BLACK">
                <font>
                   <Font name="System Bold Italic" size="14.0" />
                </font></Label>
-        <Label fx:id="player1Score" text="0" textFill="WHITE">
+        <Label fx:id="player1Score" text="0" textFill="BLACK">
                <font>
                   <Font name="System Bold Italic" size="14.0" />
                </font></Label>
-        <Label text="Mines" textFill="WHITE">
+        <Label text="Mines" textFill="BLACK">
                <font>
                   <Font name="System Bold Italic" size="14.0" />
                </font></Label>
-        <Label id="player1Score" fx:id="player1Mines" text="0" textFill="WHITE">
+        <Label id="player1Score" fx:id="player1Mines" text="0" textFill="BLACK">
                <font>
                   <Font name="System Bold Italic" size="14.0" />
                </font></Label>
@@ -94,23 +97,24 @@
   <right>
     <VBox alignment="CENTER" spacing="10.0">
       <children>
-        <Label text="Player 2" textFill="WHITE">
+          <ImageView fx:id="Player2ArrowIV" ></ImageView>
+        <Label text="Player 2" textFill="BLACK">
                <font>
                   <Font name="System Bold Italic" size="24.0" />
                </font></Label>
-        <Label text="Score" textFill="WHITE">
+        <Label text="Score" textFill="BLACK">
                <font>
                   <Font name="System Bold Italic" size="14.0" />
                </font></Label>
-        <Label fx:id="player2Score" text="0" textFill="WHITE">
+        <Label fx:id="player2Score" text="0" textFill="BLACK">
                <font>
                   <Font name="System Bold Italic" size="14.0" />
                </font></Label>
-        <Label text="Mines" textFill="WHITE">
+        <Label text="Mines" textFill="BLACK">
                <font>
                   <Font name="System Bold Italic" size="14.0" />
                </font></Label>
-        <Label id="player2Score" fx:id="player2Mines" text="0" textFill="WHITE">
+        <Label id="player2Score" fx:id="player2Mines" text="0" textFill="BLACK">
                <font>
                   <Font name="System Bold Italic" size="14.0" />
                </font></Label>

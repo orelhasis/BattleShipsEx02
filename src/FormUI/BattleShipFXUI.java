@@ -25,13 +25,14 @@ public class BattleShipFXUI extends BattleShipUI {
     // ----------------------- Declaration of variables ----------------------- //
 
     static final int NANO_SECONDS_IN_SECOND = 1000000000;
-    static final int CELL_IMAGE_SIZE = 40;
+    static final int CELL_IMAGE_SIZE = 25;
     static final String WATER_URL = "\\Resources\\water.png";
     static final String HIT_WATER_URL = "\\Resources\\hitwater.png";
     static final String BATTLESHIP_URL = "\\Resources\\battleship.png";
     static final String HIT_BATTLESHIP_URL = "\\Resources\\hitbattleship.png";
     static final String MINE_URL = "\\Resources\\mine.png";
     static final String HIT_MINE_URL = "\\Resources\\hitmine.png";
+    static final String ARROW_URL = "\\Resources\\turnarrow.png";
 
     static final int START_GAME = 2;
     static final int GET_GAME_STATUS = 3;
@@ -49,7 +50,8 @@ public class BattleShipFXUI extends BattleShipUI {
     @FXML private Label player2Score;
     @FXML private Label player1Mines;
     @FXML private Label player2Mines;
-
+    @FXML private ImageView Player1ArrowIV;
+    @FXML private ImageView Player2ArrowIV;
     // ----------------------- BattleShipFXUI methods ----------------------- //
 
     @FXML
@@ -67,6 +69,10 @@ public class BattleShipFXUI extends BattleShipUI {
     @FXML
     protected void initialize(){
         setButtonsDisable(new Button[] {startGame, gameStatistics, quit, prevMove, nextMove, }, true);
+        Player1ArrowIV.setVisible(false);
+        Player2ArrowIV.setVisible(false);
+        Player1ArrowIV.setImage(new Image(ARROW_URL,40,60,true,true));
+        Player2ArrowIV.setImage(new Image(ARROW_URL,40,60,true,true));
     }
 
     private void setButtonsDisable(Button[] buttons, boolean val) {
@@ -91,6 +97,23 @@ public class BattleShipFXUI extends BattleShipUI {
         showHistory();
     }
 
+    @Override
+    protected void swapPlayers(){
+        super.swapPlayers();
+        showCurrentPlayerArrow(theGame.getCurrentPlayer().getName());
+    }
+
+    private void showCurrentPlayerArrow(PlayerName currentPlayerName){
+        if(currentPlayerName == PlayerName.PLAYER_1){
+            Player1ArrowIV.setVisible(true);
+            Player2ArrowIV.setVisible(false);
+        }
+        else{
+            Player1ArrowIV.setVisible(false);
+            Player2ArrowIV.setVisible(true);
+        }
+    }
+
     private void showHistory() {
         int val = Integer.parseInt(moveNumber.getText());
         int indexInHistory = val-1;
@@ -101,7 +124,7 @@ public class BattleShipFXUI extends BattleShipUI {
             attackPlayerName = PlayerName.PLAYER_2;
             attackedPlayerName = PlayerName.PLAYER_1;
         }
-
+        showCurrentPlayerArrow(attackPlayerName);
         showBoards(theGame.getGameHistory().get(indexInHistory).getPrimaryBoard(), theGame.getGameHistory().get(indexInHistory).getTrackingBoard(), attackPlayerName.toString(), attackedPlayerName.toString());
         player1Score.setText(Integer.toString(theGame.getGameHistory().get(indexInHistory).getPlayer1Score()));
         player2Score.setText(Integer.toString(theGame.getGameHistory().get(indexInHistory).getPlayer2Score()));
@@ -153,12 +176,14 @@ public class BattleShipFXUI extends BattleShipUI {
         theGame.LoadGame(theGame.getGameSettings());
         createGrids();
         updateInfo();
+
         theGame.setStartTime((int)(System.nanoTime()/NANO_SECONDS_IN_SECOND));
         theGame.setCurrentTurnStartTimeInSeconds((int)(System.nanoTime()/NANO_SECONDS_IN_SECOND));
         theGame.setStatus(GameStatus.RUN);
         showBoards(theGame.getCurrentPlayer());
         startAlert("Game Start", "Let the battle begin!", "Its now Player 1 turn");
         setButtonsDisable(new Button[]{gameStatistics, quit}, false);
+        showCurrentPlayerArrow(theGame.getCurrentPlayer().getName());
     }
 
     private void createGrids() {
@@ -215,17 +240,15 @@ public class BattleShipFXUI extends BattleShipUI {
 
         pane.setOnMouseClicked(e -> {
             Point minePoint = new Point(rowIndex, colIndex);
-            if(setMineInPosition(minePoint)){
-                updateTurnStatistics();
-                updateInfo();
-                theGame.saveMove();
-                showAMineWasSetMessage();
-                swapPlayers();
-                showBoards(theGame.getCurrentPlayer());
-            }else{
-                showNoMoreMineMessage();
-            }
+            setMineInPosition(minePoint);
         });
+    }
+
+    @Override
+    protected void mineAddedSuccess(){
+        updateTurnStatistics();
+        updateInfo();
+        super.mineAddedSuccess();
     }
 
     private void setOnclickAttackBoard(Pane pane, int colIndex, int rowIndex) {
@@ -349,10 +372,26 @@ public class BattleShipFXUI extends BattleShipUI {
         startAlert("Try Again", "This position was previously attacked","Choose another position to attack");
     }
 
+    @Override
+    protected void showMinePositionIsTakenMessage(){
+        startAlert("Can't assign a mine", "This position is taken","There is already a battleship or a mine here!");
+    }
+
+    @Override
+    protected void showMineBadPositionMessage() {
+        startAlert("Can't assign a mine", "Illegal position for a mine","A mine in this position Overlaps with another mine or ship");
+    }
+
+    @Override
+    protected void showMinePositionWasHitMessage() {
+        startAlert("Can't Assign a mine", "This position was previously attacked","You don't want to put a mine here....");
+    }
+
+    @Override
     protected void showAMineWasSetMessage() {
         startAlert("Mine muahaha!", "You have set a mine","Lets wait for them to hit it!, it is now " + theGame.getNextPlayer().getName() + " Turn");
     }
-
+    @Override
     protected void showNoMoreMineMessage() {
         startAlert("No Mine", "Could not add a mine","You are out of mines");
     }
@@ -387,6 +426,7 @@ public class BattleShipFXUI extends BattleShipUI {
     public void update(Observable o, Object arg) {
 
     }
+
 
     private void updateInfo() {
         player1Score.setText(Integer.toString(theGame.getPlayers()[0].getScore()));

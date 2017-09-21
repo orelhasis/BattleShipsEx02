@@ -229,6 +229,21 @@ public class BattleShipConsoleUI extends BattleShipUI {
     }
 
     @Override
+    protected void showMineBadPositionMessage() {
+        System.out.println("A mine in this position Overlaps with another mine or ship");
+    }
+
+    @Override
+    protected void showMinePositionIsTakenMessage(){
+        System.out.println("There is already a ship or a mine here!");
+    }
+
+    @Override
+    protected void showMinePositionWasHitMessage() {
+        System.out.println("This position was previously attacked, You don't want to put a mine here....");
+    }
+
+    @Override
     protected void showDrownedMessage() {
         System.out.println("YES!!! " + theGame.getCurrentPlayer().getName().toString() + " has drowned a ship!");
     }

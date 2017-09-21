@@ -1,5 +1,6 @@
 package ConsoleUI;
 
+import BattleShipsLogic.Definitions.MineMoveResult;
 import BattleShipsLogic.Definitions.MoveResults;
 import BattleShipsLogic.GameObjects.GameManager;
 import BattleShipsLogic.GameObjects.Player;
@@ -34,6 +35,8 @@ public abstract class BattleShipUI implements Observer{
     protected abstract void printStatistics();
     protected abstract void showBoards(char[][] board, char[][] trackingboard, String attackPlayerName, String attackedPlayerName);
     protected abstract void showUsedMessage();
+    protected abstract void showMineBadPositionMessage();
+    protected abstract void showMinePositionWasHitMessage();
     protected abstract void showDrownedMessage();
     protected abstract void showHitAMineMessage();
     protected abstract void showMissMessage();
@@ -62,7 +65,6 @@ public abstract class BattleShipUI implements Observer{
                 File file = new File(filePath);
                 if (!file.exists()) {
                     UIloadingError += "File Does not Exist" + System.getProperty("line.separator");
-                    ;
                     isLoadedSuccessfully = false;
                 } else {
                     JAXBContext jaxbContext = JAXBContext.newInstance(BattleShipGame.class);
@@ -77,6 +79,14 @@ public abstract class BattleShipUI implements Observer{
             }
         }
         return isLoadedSuccessfully;
+    }
+
+    protected void showAMineWasSetMessage(){
+
+    }
+
+    protected void showNoMoreMineMessage(){
+
     }
 
     protected boolean isLegalChoice(int choice){
@@ -138,7 +148,36 @@ public abstract class BattleShipUI implements Observer{
     }
 
     protected boolean setMineInPosition(Point position){
-        return theGame.getCurrentPlayer().AddMine(position);
+        MineMoveResult res = theGame.SetMineInPosition(position);
+        Boolean retVal = false;
+        switch (res){
+            case Success:
+                mineAddedSuccess();
+                retVal = true;
+                break;
+            case WasHit:
+                showMinePositionWasHitMessage();
+                break;
+            case NoMinesLeft:
+                showNoMoreMineMessage();
+                break;
+            case MineOverLapping:
+                showMineBadPositionMessage();
+                break;
+            case PositionIsTaken:
+                showMinePositionIsTakenMessage();
+                break;
+        }
+        return retVal;
+    }
+
+    protected abstract void showMinePositionIsTakenMessage();
+
+    protected void mineAddedSuccess() {
+        theGame.saveMove();
+        showAMineWasSetMessage();
+        swapPlayers();
+        showBoards(theGame.getCurrentPlayer());
     }
 
     protected void swapPlayers() {

@@ -158,10 +158,8 @@ public class Player {
         boolean successfullyAdded = false;
         if(numberOfMines > 0){
             --numberOfMines;
-            //TODO: need to check if it is possible to add a mine here
             board[position.getX()][position.getY()] = new Mine(position);
             successfullyAdded = true;
-
         }
         return successfullyAdded;
     }

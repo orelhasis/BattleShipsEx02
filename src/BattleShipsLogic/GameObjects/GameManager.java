@@ -399,6 +399,52 @@ public class GameManager extends java.util.Observable{
         }
     }
 
+    public MineMoveResult SetMineInPosition(Point location){
+        SeaItem[][] board = getCurrentPlayer().getBoard();
+        int x = location.getX();
+        int y = location.getY();
+        boolean resultOK = true;
+        if(!(board[x][y] instanceof WaterItem)){
+            return MineMoveResult.PositionIsTaken;
+        }
+        else if(board[x][y].IsDestroyed()){
+            return MineMoveResult.WasHit;
+        }
+        if(x > 0){
+            resultOK &= board[x-1][y] instanceof WaterItem;
+            if(y>0) {
+                resultOK &= board[x - 1][y - 1] instanceof WaterItem;
+            }
+            if(y<boardSize-1){
+                resultOK &= board[x-1][y+1] instanceof WaterItem;
+            }
+        }
+        if(y>0) {
+            resultOK &= board[x][y - 1] instanceof WaterItem;
+        }
+        if(x < boardSize-1){
+            resultOK &= board[x+1][y] instanceof WaterItem;
+            if(y<boardSize-1){
+                resultOK &= board[x+1][y+1] instanceof WaterItem;
+            }
+            if(y>0){
+                resultOK &= board[x+1][y-1] instanceof WaterItem;
+            }
+        }
+        if(y<boardSize-1){
+            resultOK &= board[x][y+1] instanceof WaterItem;
+        }
+        if (resultOK){
+            if (!getCurrentPlayer().AddMine(location)){
+                return MineMoveResult.NoMinesLeft;
+            }
+            return MineMoveResult.Success;
+        }
+        else{
+            return MineMoveResult.MineOverLapping;
+        }
+    }
+
     private void updateStatistics(int moveTime){
         int numberOfTurns = currentPlayer.getStatistics().getNumberOfTurns();
         int averageTimeOfTurn = currentPlayer.getStatistics().getAverageTimeForTurn();
