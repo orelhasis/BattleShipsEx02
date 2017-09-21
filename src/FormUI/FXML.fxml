@@ -43,7 +43,7 @@
       <tabs>
         <Tab text="Tracking board">
           <content>
-              <VBox alignment="CENTER">
+              <VBox alignment="CENTER"  style="-fx-background-color: rgb(255,255,255,0.5);">
                 <HBox alignment="CENTER">
                     <ScrollPane fx:id="opponentGridArea" />
                 </HBox>
@@ -52,7 +52,7 @@
         </Tab>
         <Tab text="My Board">
           <content>
-              <VBox alignment="CENTER">
+              <VBox alignment="CENTER" style="-fx-background-color: rgb(255,255,255,0.5);">
                 <HBox alignment="CENTER">
                     <ScrollPane fx:id="playerGridArea" />
                 </HBox>
