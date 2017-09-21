@@ -1,11 +1,9 @@
 package FormUI;
 
 import BattleShipsLogic.Definitions.GameStatus;
+import BattleShipsLogic.Definitions.MoveResults;
 import BattleShipsLogic.Definitions.PlayerName;
-import BattleShipsLogic.GameObjects.GameManager;
-import BattleShipsLogic.GameObjects.Player;
 import BattleShipsLogic.GameObjects.Point;
-import ConsoleUI.BattleShipUI;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -215,8 +213,10 @@ public class BattleShipFXUI extends BattleShipUI {
 
         pane.setOnMouseClicked(e -> {
             Point minePoint = new Point(rowIndex, colIndex);
+            // To DO: Check set mine position
             if(setMineInPosition(minePoint)){
-                updateTurnStatistics();
+                // If the position in not valid do not enter here!
+                theGame.updateStatistics();
                 updateInfo();
                 theGame.saveMove();
                 showAMineWasSetMessage();
@@ -231,9 +231,12 @@ public class BattleShipFXUI extends BattleShipUI {
     private void setOnclickAttackBoard(Pane pane, int colIndex, int rowIndex) {
 
         pane.setOnMouseClicked(e -> {
-            int moveTime = updateTurnStatistics();
             Point attackedPoint = new Point(rowIndex, colIndex);
-            showMoveResults(theGame.makeMove(attackedPoint,moveTime));
+            MoveResults result = theGame.makeMove(attackedPoint);
+            if(result!=MoveResults.Used) {
+                theGame.updateStatistics();
+            }
+            showMoveResults(result);
             theGame.saveMove();
             showBoards(theGame.getCurrentPlayer());
             if(theGame.getStatus() == GameStatus.OVER) {
@@ -241,12 +244,6 @@ public class BattleShipFXUI extends BattleShipUI {
                 setButtonsDisable(new Button[] {prevMove, nextMove}, false);
             }
         });
-    }
-
-    private int updateTurnStatistics() {
-        int moveTime = (int) ((System.nanoTime()/NANO_SECONDS_IN_SECOND) - theGame.getCurrentTurnStartTimeInSeconds());
-        theGame.setCurrentTurnStartTimeInSeconds((int)(System.nanoTime()/NANO_SECONDS_IN_SECOND));
-        return moveTime;
     }
 
     private void handleHasWinner() {
