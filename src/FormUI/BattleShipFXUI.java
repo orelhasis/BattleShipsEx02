@@ -180,6 +180,7 @@ public class BattleShipFXUI extends BattleShipUI {
         showBoards(theGame.getCurrentPlayer());
         startAlert("Game Start", "Let the battle begin!", "Its now Player 1 turn");
         setButtonsDisable(new Button[]{gameStatistics, quit}, false);
+        setButtonsDisable(new Button[]{startGame}, true);
         showCurrentPlayerArrow(theGame.getCurrentPlayer().getName());
     }
 
@@ -258,7 +259,7 @@ public class BattleShipFXUI extends BattleShipUI {
             showBoards(theGame.getCurrentPlayer());
             if(theGame.getStatus() == GameStatus.OVER) {
                 handleHasWinner();
-                setButtonsDisable(new Button[] {prevMove, nextMove}, false);
+                setButtonsDisable(new Button[] {prevMove, nextMove, startGame}, false);
             }
         });
     }
@@ -342,7 +343,7 @@ public class BattleShipFXUI extends BattleShipUI {
         theGame.setStatus(GameStatus.OVER);
         theGame.setEndTimeInSeconds((int)(System.nanoTime()/NANO_SECONDS_IN_SECOND));
         startAlert("Quit Game", theGame.getCurrentPlayer().getName() +" left the game", "Thank you and good-bye!");
-        setButtonsDisable(new Button[]{prevMove, nextMove, gameStatistics},false);
+        setButtonsDisable(new Button[]{prevMove, nextMove, gameStatistics, startGame},false);
         setButtonsDisable(new Button[]{quit},true);
     }
 
