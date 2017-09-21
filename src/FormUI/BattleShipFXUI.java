@@ -335,7 +335,14 @@ public class BattleShipFXUI extends BattleShipUI {
         statistics += "Number of hits: " + theGame.getPlayers()[0].getName() + " - " + theGame.getPlayers()[0].getStatistics().getNumberOfHits() + ", " + theGame.getPlayers()[1].getName() + " - " + theGame.getPlayers()[1].getStatistics().getNumberOfHits() + "." + nl;
         statistics += "Number of misses: " + theGame.getPlayers()[0].getName() + " - " + theGame.getPlayers()[0].getStatistics().getNumberOfMissing() + ", " + theGame.getPlayers()[1].getName() + " - " + theGame.getPlayers()[1].getStatistics().getNumberOfMissing() + "." + nl;
         statistics += "Average time for attack: " + theGame.getPlayers()[0].getName() + " - " + calcTime(theGame.getPlayers()[0].getStatistics().getAverageTimeForTurn()) + ", " + theGame.getPlayers()[1].getName() + " - " + calcTime(theGame.getPlayers()[1].getStatistics().getAverageTimeForTurn()) + "." + nl;
-        startAlert("Statistics","Current Game Statistics", statistics);
+
+        int numberOfShipsToAttack = theGame.getPlayers()[0].getRemainingShips();
+        if(theGame.getCurrentPlayer() == theGame.getPlayers()[0]){
+            numberOfShipsToAttack = theGame.getPlayers()[1].getRemainingShips();
+        }
+        statistics += "Remaining ships to destroy: " + numberOfShipsToAttack + "." + nl;
+
+        startAlert("Statistics","Game Statistics", statistics);
     }
 
     @FXML
