@@ -26,13 +26,13 @@ public class BattleShipFXUI extends BattleShipUI {
     // ----------------------- Declaration of variables ----------------------- //
 
     static final int CELL_IMAGE_SIZE = 25;
-    static final String WATER_URL = "\\Resources\\water.png";
-    static final String HIT_WATER_URL = "\\Resources\\hitwater.png";
-    static final String BATTLESHIP_URL = "\\Resources\\battleship.png";
-    static final String HIT_BATTLESHIP_URL = "\\Resources\\hitbattleship.png";
-    static final String MINE_URL = "\\Resources\\mine.png";
-    static final String HIT_MINE_URL = "\\Resources\\hitmine.png";
-    static final String ARROW_URL = "\\Resources\\turnarrow.png";
+    static final String WATER_URL = "/Resources/water.png";
+    static final String HIT_WATER_URL = "/Resources/hitwater.png";
+    static final String BATTLESHIP_URL = "/Resources/battleship.png";
+    static final String HIT_BATTLESHIP_URL = "/Resources/hitbattleship.png";
+    static final String MINE_URL = "/Resources/mine.png";
+    static final String HIT_MINE_URL = "/Resources/hitmine.png";
+    static final String ARROW_URL = "/Resources/turnarrow.png";
 
     static final int START_GAME = 2;
     static final int GET_GAME_STATUS = 3;
