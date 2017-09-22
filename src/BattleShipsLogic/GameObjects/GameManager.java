@@ -250,8 +250,8 @@ public class GameManager extends java.util.Observable{
         ShipCategories category = getShipCategoryByType(ships.get(index),shipTypes);
         int length = getShipLength(ships.get(index), shipTypes); // Get ship length by type.
         int score = getShipScore(ships.get(index), shipTypes); // Get ship length by type.
-        int positionY = ships.get(index).getPosition().getY(); // Get y position.
-        int positionX = ships.get(index).getPosition().getX(); // Get x position.
+        int positionY = ships.get(index).getPosition().getX(); // Get y position.
+        int positionX = ships.get(index).getPosition().getY(); // Get x position.
         // Create new battle ship.
         return new BattleShip(direction, shipType,length , score, positionX, positionY, category);
     }
@@ -282,7 +282,13 @@ public class GameManager extends java.util.Observable{
                 if (ShipCategories.REGULAR.name().equalsIgnoreCase(type.getCategory())){
                     return ShipCategories.REGULAR;
                 }
-                else return ShipCategories.L_SHAPE;
+                else if (ShipCategories.L_SHAPE.name().equalsIgnoreCase(type.getCategory())){
+                    return ShipCategories.L_SHAPE;
+                } else {
+                    isErrorLoading = true;
+                    errorString+="Ship category can only be REGULAR or L_SHAPE!" + System.getProperty("line.separator");
+                }
+
             }
         }
         return ShipCategories.L_SHAPE;
@@ -296,6 +302,7 @@ public class GameManager extends java.util.Observable{
     }
 
     private void setLShapeShip(Player player, BattleShip playerShip){
+
         ShipDirection shipDir= playerShip.getDirection();
         Point rowPoint,colPoint, pivotPos = playerShip.getPosition();
         rowPoint = colPoint = pivotPos;
@@ -318,7 +325,7 @@ public class GameManager extends java.util.Observable{
             default:
                 isErrorLoading = true;
                 continueAddingShip = false;
-                errorString += "L-Shape ship direction cannot be ROW  or COLUMN!" + System.getProperty("line.separator");
+                errorString += "L-Shape ship direction cannot be ROW or COLUMN!" + System.getProperty("line.separator");
                 break;
         }
         if(continueAddingShip){
@@ -328,6 +335,11 @@ public class GameManager extends java.util.Observable{
     }
 
     private void setRegularShip(Player player, BattleShip playerShip){
+        if(playerShip.getDirection() != ShipDirection.ROW && playerShip.getDirection() != ShipDirection.COLUMN) {
+            isErrorLoading = true;
+            errorString += "Regular ship direction must be ROW or COLUMN!" + System.getProperty("line.separator");
+        }
+
         if (playerShip.getDirection() == ShipDirection.ROW) {
             setRowShip(player,playerShip.getPosition(),playerShip,playerShip.getLength());
         } else {
