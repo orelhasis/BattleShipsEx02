@@ -18,10 +18,9 @@ public class Main extends Application {
     public void start(Stage primaryStage) throws Exception{
         Parent root = FXMLLoader.load(getClass().getResource("FXML.fxml"));
         primaryStage.setTitle("Battle-Ships");
-        Scene scene = new Scene(root, 755, 570);
+        Scene scene = new Scene(root, 765, 585);
         primaryStage.setScene(scene);
         primaryStage.getIcons().add(new Image("/Resources/icon.jpg"));
-        primaryStage.setResizable(false);
         primaryStage.show();
     }
 }

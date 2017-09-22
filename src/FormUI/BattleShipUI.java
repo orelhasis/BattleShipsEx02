@@ -152,6 +152,7 @@ public abstract class BattleShipUI implements Observer{
         Boolean retVal = false;
         switch (res){
             case Success:
+                theGame.updateStatistics();
                 mineAddedSuccess();
                 retVal = true;
                 break;
